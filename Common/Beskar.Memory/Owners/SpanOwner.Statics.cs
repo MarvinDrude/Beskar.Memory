@@ -25,4 +25,22 @@ public ref partial struct SpanOwner<T>
    {
       return new SpanOwner<T>(size, clearArray, pool);
    }
+
+   /// <summary>
+   /// Allocates a new pooled buffer and copies the contents of the source span into it.
+   /// </summary>
+   /// <param name="source">The source data to duplicate.</param>
+   /// <param name="minSize">The min size of the new buffer.</param>
+   /// <param name="clearArray"><see langword="true"/> to clear the rented buffer; otherwise, <see langword="false"/>.</param>
+   /// <param name="pool">The custom pool to use, or null for the shared pool.</param>
+   [MethodImpl(MethodImplOptions.AggressiveInlining)]
+   public static SpanOwner<T> AllocateAndCopy(ReadOnlySpan<T> source, int minSize,
+      bool clearArray = false, ArrayPool<T>? pool = null)
+   {
+      // Set clearArray to false because we immediately overwrite every single byte!
+      var owner = new SpanOwner<T>(minSize, clearArray: clearArray, pool);
+      source.CopyTo(owner);
+
+      return owner;
+   }
 }

@@ -3,6 +3,7 @@
     <File Path=".editorconfig" />
     <File Path=".gitattributes" />
     <File Path=".gitignore" />
+    <File Path="CodeStyle.md" />
     <File Path="CONTRIBUTING.md" />
     <File Path="Directory.Build.props" />
     <File Path="Directory.Packages.props" />
@@ -14,5 +15,7 @@
   <Folder Name="/Common/">
     <Project Path="Common/Beskar.Memory/Beskar.Memory.csproj" />
   </Folder>
-  <Folder Name="/Tests/" />
+  <Folder Name="/Tests/">
+    <Project Path="Tests/Beskar.Memory.Tests/Beskar.Memory.Tests.csproj" />
+  </Folder>
 </Solution>
