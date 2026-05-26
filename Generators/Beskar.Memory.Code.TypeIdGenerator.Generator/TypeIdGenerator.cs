@@ -1,4 +1,5 @@
-﻿using Microsoft.CodeAnalysis;
+using System.Reflection;
+using Microsoft.CodeAnalysis;
 
 namespace Beskar.Memory.Code.TypeIdGenerator.Generator;
 
@@ -6,7 +7,10 @@ namespace Beskar.Memory.Code.TypeIdGenerator.Generator;
 public sealed partial class TypeIdGenerator : IIncrementalGenerator
 {
    public const string GeneratorName = "TypeIdGenerator";
-   public const string GeneratorVersion = "1.2.1";
+   
+   public static readonly string GeneratorVersion = typeof(TypeIdGenerator).Assembly
+      .GetCustomAttribute<AssemblyInformationalVersionAttribute>()?
+      .InformationalVersion.Split('+')[0] ?? "1.0.0";
    
    public void Initialize(IncrementalGeneratorInitializationContext context)
    {

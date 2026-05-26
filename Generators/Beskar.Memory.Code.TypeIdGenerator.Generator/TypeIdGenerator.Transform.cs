@@ -1,4 +1,4 @@
-﻿using Beskar.Memory.Code.Common;
+using Beskar.Memory.Code.Common;
 using Beskar.Memory.Code.Common.Symbols;
 using Beskar.Memory.Code.Diagnostics;
 using Beskar.Memory.Code.Models.Diagnostics;
@@ -44,7 +44,7 @@ public sealed partial class TypeIdGenerator
          return builder.Add(InvalidTargetDiagnosticId).Build();
       }
 
-      if (parameter.Symbol.Name != "Value")
+      if (!string.Equals(parameter.Symbol.Name, "Value", StringComparison.OrdinalIgnoreCase))
       {
          return builder.Add(InvalidTargetDiagnosticId).Build();
       }
@@ -70,7 +70,8 @@ public sealed partial class TypeIdGenerator
          {
             MethodFilter = static (method) => 
                method.MethodKind is MethodKind.Constructor 
-                  && method.Parameters.Length == 1,
+                  && method.Parameters.Length == 1
+                  && method.Parameters[0].Name.Equals("Value", StringComparison.OrdinalIgnoreCase),
             Load = new NamedTypeSymbolLoadFlags()
             {
                Methods = true,

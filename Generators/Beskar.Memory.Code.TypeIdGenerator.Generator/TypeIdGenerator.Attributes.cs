@@ -1,4 +1,4 @@
-﻿using System.Collections.Immutable;
+using System.Collections.Immutable;
 using Microsoft.CodeAnalysis;
 
 namespace Beskar.Memory.Code.TypeIdGenerator.Generator;
@@ -30,13 +30,13 @@ public sealed partial class TypeIdGenerator
             Name: "Attributes",
             ContainingNamespace:
             {
-               Name: "Marker",
+               Name: "TypeIdGenerator",
                ContainingNamespace:
                {
-                  Name: "TypeIdGenerator",
+                  Name: "Code",
                   ContainingNamespace:
                   {
-                     Name: "CodeGeneration",
+                     Name: "Memory",
                      ContainingNamespace:
                      {
                         Name: "Beskar",

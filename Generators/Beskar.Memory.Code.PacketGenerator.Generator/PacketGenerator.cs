@@ -1,3 +1,4 @@
+using System.Reflection;
 using Beskar.Memory.Code.PacketGenerator.Generator.Models;
 using Beskar.Memory.Collections;
 using Microsoft.CodeAnalysis;
@@ -8,7 +9,10 @@ namespace Beskar.Memory.Code.PacketGenerator.Generator;
 public sealed partial class PacketGenerator : IIncrementalGenerator
 {
    public const string GeneratorName = "PacketGenerator";
-   public const string GeneratorVersion = "1.2.1";
+   
+   public static readonly string GeneratorVersion = typeof(PacketGenerator).Assembly
+      .GetCustomAttribute<AssemblyInformationalVersionAttribute>()?
+      .InformationalVersion.Split('+')[0] ?? "1.0.0";
    
    public void Initialize(IncrementalGeneratorInitializationContext context)
    {

@@ -1,4 +1,4 @@
-﻿using Beskar.Memory.Code.Common.Enums;
+using Beskar.Memory.Code.Common.Enums;
 using Beskar.Memory.Code.Common.Specs;
 using Beskar.Memory.Code.Common.Symbols;
 using Beskar.Memory.Code.Rendering;
@@ -208,6 +208,13 @@ public sealed class TypeIdRenderer(SourceProductionContext ctx)
 
    private void WriteCheckProperties(ref CodeTextWriter writer)
    {
+      if (_parameterName != "Value")
+      {
+         writer.WriteLine("// Interface bridge");
+         writer.WriteLineInterpolated($"public {_underlyingType} Value => {_parameterName};");
+         writer.WriteLine();
+      }
+
       if (_isAnyNumber || _isGuid)
       {
          return;

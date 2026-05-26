@@ -1,3 +1,4 @@
+using System.Reflection;
 using Microsoft.CodeAnalysis;
 
 namespace Beskar.Memory.Code.ObserveGenerator.Generator;
@@ -6,7 +7,10 @@ namespace Beskar.Memory.Code.ObserveGenerator.Generator;
 public sealed partial class ObserveGenerator : IIncrementalGenerator
 {
    public const string GeneratorName = "ObserveGenerator";
-   public const string GeneratorVersion = "1.2.1";
+   
+   public static readonly string GeneratorVersion = typeof(ObserveGenerator).Assembly
+      .GetCustomAttribute<AssemblyInformationalVersionAttribute>()?
+      .InformationalVersion.Split('+')[0] ?? "1.0.0";
    
    public void Initialize(IncrementalGeneratorInitializationContext context)
    {
