@@ -1,0 +1,18 @@
+<Solution>
+  <Folder Name="/Additional Files/">
+    <File Path=".editorconfig" />
+    <File Path=".gitattributes" />
+    <File Path=".gitignore" />
+    <File Path="CONTRIBUTING.md" />
+    <File Path="Directory.Build.props" />
+    <File Path="Directory.Packages.props" />
+    <File Path="LICENSE.md" />
+    <File Path="NuGet.Config" />
+    <File Path="README.md" />
+    <File Path="SECURITY.md" />
+  </Folder>
+  <Folder Name="/Common/">
+    <Project Path="Common/Beskar.Memory/Beskar.Memory.csproj" />
+  </Folder>
+  <Folder Name="/Tests/" />
+</Solution>
