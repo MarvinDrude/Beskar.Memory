@@ -14,6 +14,7 @@
   </Folder>
   <Folder Name="/Bundles/" />
   <Folder Name="/Common/">
+    <Project Path="Common/Beskar.Memory.Code/Beskar.Memory.Code.csproj" />
     <Project Path="Common/Beskar.Memory/Beskar.Memory.csproj" />
   </Folder>
   <Folder Name="/Generators/" />
