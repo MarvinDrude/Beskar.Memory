@@ -10,6 +10,7 @@
    <ItemGroup>
      <Folder Include="Buffers\" />
      <Folder Include="Flags\" />
+     <Folder Include="Results\" />
      <Folder Include="Threading\" />
      <Folder Include="Timing\" />
    </ItemGroup>

@@ -12,9 +12,12 @@
     <File Path="README.md" />
     <File Path="SECURITY.md" />
   </Folder>
+  <Folder Name="/Bundles/" />
   <Folder Name="/Common/">
     <Project Path="Common/Beskar.Memory/Beskar.Memory.csproj" />
   </Folder>
+  <Folder Name="/Generators/" />
+  <Folder Name="/Implementation/" />
   <Folder Name="/Tests/">
     <Project Path="Tests/Beskar.Memory.Tests/Beskar.Memory.Tests.csproj" />
   </Folder>
