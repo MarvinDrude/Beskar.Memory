@@ -12,14 +12,18 @@
     <File Path="README.md" />
     <File Path="SECURITY.md" />
   </Folder>
-  <Folder Name="/Bundles/" />
+  <Folder Name="/Bundles/">
+    <Project Path="Bundles/Beskar.Memory.Code.TypeIdGenerator/Beskar.Memory.Code.TypeIdGenerator.csproj" />
+  </Folder>
   <Folder Name="/Common/">
     <Project Path="Common/Beskar.Memory.Code/Beskar.Memory.Code.csproj" />
     <Project Path="Common/Beskar.Memory/Beskar.Memory.csproj" />
   </Folder>
-  <Folder Name="/Generators/" />
-  <Folder Name="/Implementation/" />
+  <Folder Name="/Generators/">
+    <Project Path="Generators/Beskar.Memory.Code.TypeIdGenerator.Generator/Beskar.Memory.Code.TypeIdGenerator.Generator.csproj" />
+  </Folder>
   <Folder Name="/Tests/">
     <Project Path="Tests/Beskar.Memory.Tests/Beskar.Memory.Tests.csproj" />
+    <Project Path="Tests/Beskar.Memory.Code.TypeIdGenerator.Tests/Beskar.Memory.Code.TypeIdGenerator.Tests.csproj" />
   </Folder>
 </Solution>
