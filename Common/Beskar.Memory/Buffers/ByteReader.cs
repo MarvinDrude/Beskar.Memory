@@ -126,40 +126,39 @@ public ref struct ByteReader
       var size = Unsafe.SizeOf<T>();
       if (!BitConverter.IsLittleEndian)
       {
-         if (size == 1)
+         switch (size)
          {
-            return Unsafe.ReadUnaligned<T>(ref MemoryMarshal.GetReference(span));
-         }
-         else if (size == 2)
-         {
-            var val = Unsafe.ReadUnaligned<ushort>(ref MemoryMarshal.GetReference(span));
-            var rev = BinaryPrimitives.ReverseEndianness(val);
-            return Unsafe.As<ushort, T>(ref rev);
-         }
-         else if (size == 4)
-         {
-            var val = Unsafe.ReadUnaligned<uint>(ref MemoryMarshal.GetReference(span));
-            var rev = BinaryPrimitives.ReverseEndianness(val);
-            return Unsafe.As<uint, T>(ref rev);
-         }
-         else if (size == 8)
-         {
-            var val = Unsafe.ReadUnaligned<ulong>(ref MemoryMarshal.GetReference(span));
-            var rev = BinaryPrimitives.ReverseEndianness(val);
-            return Unsafe.As<ulong, T>(ref rev);
-         }
-         else
-         {
-            Span<byte> revTemp = stackalloc byte[size];
-            span.CopyTo(revTemp);
-            revTemp.Reverse();
-            return Unsafe.ReadUnaligned<T>(ref MemoryMarshal.GetReference(revTemp));
+            case 1:
+               break;
+            case 2:
+            {
+               var val = Unsafe.ReadUnaligned<ushort>(ref MemoryMarshal.GetReference(span));
+               var rev = BinaryPrimitives.ReverseEndianness(val);
+               return Unsafe.As<ushort, T>(ref rev);
+            }
+            case 4:
+            {
+               var val = Unsafe.ReadUnaligned<uint>(ref MemoryMarshal.GetReference(span));
+               var rev = BinaryPrimitives.ReverseEndianness(val);
+               return Unsafe.As<uint, T>(ref rev);
+            }
+            case 8:
+            {
+               var val = Unsafe.ReadUnaligned<ulong>(ref MemoryMarshal.GetReference(span));
+               var rev = BinaryPrimitives.ReverseEndianness(val);
+               return Unsafe.As<ulong, T>(ref rev);
+            }
+            default:
+            {
+               Span<byte> revTemp = stackalloc byte[size];
+               span.CopyTo(revTemp);
+               revTemp.Reverse();
+               return Unsafe.ReadUnaligned<T>(ref MemoryMarshal.GetReference(revTemp));
+            }
          }
       }
-      else
-      {
-         return Unsafe.ReadUnaligned<T>(ref MemoryMarshal.GetReference(span));
-      }
+
+      return Unsafe.ReadUnaligned<T>(ref MemoryMarshal.GetReference(span));
    }
 
    /// <summary>

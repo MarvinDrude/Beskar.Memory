@@ -36,6 +36,74 @@ public class ByteReaderTests
    }
 
    [Fact]
+   public void ReadBuiltInTypes()
+   {
+      Span<byte> backing = new byte[256];
+      var writer = new ByteWriter(backing);
+      
+      writer.WriteLittleEndian<sbyte>(-12);
+      writer.WriteLittleEndian<byte>(240);
+      writer.WriteLittleEndian<short>(-3000);
+      writer.WriteLittleEndian<ushort>(60000);
+      writer.WriteLittleEndian<int>(-2000000);
+      writer.WriteLittleEndian<uint>(4000000000U);
+      writer.WriteLittleEndian<long>(-9000000000000L);
+      writer.WriteLittleEndian<ulong>(18000000000000000000UL);
+      writer.WriteLittleEndian<char>('Ω');
+      writer.WriteLittleEndian<float>(3.14F);
+      writer.WriteLittleEndian<double>(2.71828);
+      writer.WriteLittleEndian<bool>(true);
+      writer.WriteLittleEndian<Half>((Half)1.5f);
+
+      writer.WriteBigEndian<sbyte>(-12);
+      writer.WriteBigEndian<byte>(240);
+      writer.WriteBigEndian<short>(-3000);
+      writer.WriteBigEndian<ushort>(60000);
+      writer.WriteBigEndian<int>(-2000000);
+      writer.WriteBigEndian<uint>(4000000000U);
+      writer.WriteBigEndian<long>(-9000000000000L);
+      writer.WriteBigEndian<ulong>(18000000000000000000UL);
+      writer.WriteBigEndian<char>('Ω');
+      writer.WriteBigEndian<float>(3.14F);
+      writer.WriteBigEndian<double>(2.71828);
+      writer.WriteBigEndian<bool>(true);
+      writer.WriteBigEndian<Half>((Half)1.5f);
+
+      var writtenBytes = writer.WrittenSpan;
+      var reader = new ByteReader(writtenBytes);
+
+      Assert.Equal((sbyte)-12, reader.ReadLittleEndian<sbyte>());
+      Assert.Equal((byte)240, reader.ReadLittleEndian<byte>());
+      Assert.Equal((short)-3000, reader.ReadLittleEndian<short>());
+      Assert.Equal((ushort)60000, reader.ReadLittleEndian<ushort>());
+      Assert.Equal(-2000000, reader.ReadLittleEndian<int>());
+      Assert.Equal(4000000000U, reader.ReadLittleEndian<uint>());
+      Assert.Equal(-9000000000000L, reader.ReadLittleEndian<long>());
+      Assert.Equal(18000000000000000000UL, reader.ReadLittleEndian<ulong>());
+      Assert.Equal('Ω', reader.ReadLittleEndian<char>());
+      Assert.Equal(3.14F, reader.ReadLittleEndian<float>());
+      Assert.Equal(2.71828, reader.ReadLittleEndian<double>());
+      Assert.True(reader.ReadLittleEndian<bool>());
+      Assert.Equal((Half)1.5f, reader.ReadLittleEndian<Half>());
+
+      Assert.Equal((sbyte)-12, reader.ReadBigEndian<sbyte>());
+      Assert.Equal((byte)240, reader.ReadBigEndian<byte>());
+      Assert.Equal((short)-3000, reader.ReadBigEndian<short>());
+      Assert.Equal((ushort)60000, reader.ReadBigEndian<ushort>());
+      Assert.Equal(-2000000, reader.ReadBigEndian<int>());
+      Assert.Equal(4000000000U, reader.ReadBigEndian<uint>());
+      Assert.Equal(-9000000000000L, reader.ReadBigEndian<long>());
+      Assert.Equal(18000000000000000000UL, reader.ReadBigEndian<ulong>());
+      Assert.Equal('Ω', reader.ReadBigEndian<char>());
+      Assert.Equal(3.14F, reader.ReadBigEndian<float>());
+      Assert.Equal(2.71828, reader.ReadBigEndian<double>());
+      Assert.True(reader.ReadBigEndian<bool>());
+      Assert.Equal((Half)1.5f, reader.ReadBigEndian<Half>());
+
+      writer.Dispose();
+   }
+
+   [Fact]
    public void ReadSequenceBytes()
    {
       var firstSegment = new byte[] { 10, 20 };
