@@ -14,6 +14,8 @@
   </Folder>
   <Folder Name="/Bundles/">
     <Project Path="Bundles/Beskar.Memory.Code.TypeIdGenerator/Beskar.Memory.Code.TypeIdGenerator.csproj" />
+    <Project Path="Bundles/Beskar.Memory.Code.ObserveGenerator/Beskar.Memory.Code.ObserveGenerator.csproj" />
+    <Project Path="Bundles/Beskar.Memory.Code.EnumGenerator/Beskar.Memory.Code.EnumGenerator.csproj" />
   </Folder>
   <Folder Name="/Common/">
     <Project Path="Common/Beskar.Memory.Code/Beskar.Memory.Code.csproj" />
@@ -21,10 +23,14 @@
   </Folder>
   <Folder Name="/Generators/">
     <Project Path="Generators/Beskar.Memory.Code.TypeIdGenerator.Generator/Beskar.Memory.Code.TypeIdGenerator.Generator.csproj" />
+    <Project Path="Generators/Beskar.Memory.Code.ObserveGenerator.Generator/Beskar.Memory.Code.ObserveGenerator.Generator.csproj" />
+    <Project Path="Generators/Beskar.Memory.Code.EnumGenerator.Generator/Beskar.Memory.Code.EnumGenerator.Generator.csproj" />
   </Folder>
   <Folder Name="/Tests/">
     <Project Path="Tests/Beskar.Memory.Tests/Beskar.Memory.Tests.csproj" />
     <Project Path="Tests/Beskar.Memory.Code.TypeIdGenerator.Tests/Beskar.Memory.Code.TypeIdGenerator.Tests.csproj" />
+    <Project Path="Tests/Beskar.Memory.Code.ObserveGenerator.Tests/Beskar.Memory.Code.ObserveGenerator.Tests.csproj" />
+    <Project Path="Tests/Beskar.Memory.Code.EnumGenerator.Tests/Beskar.Memory.Code.EnumGenerator.Tests.csproj" />
     <Project Path="Tests/Beskar.Memory.Code.Tests/Beskar.Memory.Code.Tests.csproj" />
     <Project Path="Tests/Beskar.Memory.Tests.Utils/Beskar.Memory.Tests.Utils.csproj" />
   </Folder>

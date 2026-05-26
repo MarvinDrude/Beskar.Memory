@@ -1,0 +1,25 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+   <PropertyGroup>
+      <TargetFramework>net10.0</TargetFramework>
+      <ImplicitUsings>disable</ImplicitUsings>
+      <Nullable>enable</Nullable>
+      <IsPackable>false</IsPackable>
+      <NoWarn>CS9113</NoWarn>
+   </PropertyGroup>
+
+   <ItemGroup>
+      <PackageReference Include="Basic.Reference.Assemblies.Net100" />
+      <PackageReference Include="Microsoft.NET.Test.Sdk" />
+      <PackageReference Include="xunit" />
+      <PackageReference Include="xunit.runner.visualstudio" />
+      <PackageReference Include="Microsoft.CodeAnalysis.CSharp" />
+   </ItemGroup>
+
+   <ItemGroup>
+      <ProjectReference Include="..\..\Bundles\Beskar.Memory.Code.ObserveGenerator\Beskar.Memory.Code.ObserveGenerator.csproj" />
+      <ProjectReference Include="..\..\Generators\Beskar.Memory.Code.ObserveGenerator.Generator\Beskar.Memory.Code.ObserveGenerator.Generator.csproj" Aliases="Generator" />
+      <ProjectReference Include="..\Beskar.Memory.Tests.Utils\Beskar.Memory.Tests.Utils.csproj" />
+   </ItemGroup>
+
+</Project>

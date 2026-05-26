@@ -1,0 +1,42 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+   <PropertyGroup>
+      <TargetFramework>net10.0</TargetFramework>
+      <ImplicitUsings>enable</ImplicitUsings>
+      <Nullable>enable</Nullable>
+      <IsPackable>true</IsPackable>
+      <RootNamespace>Beskar.Memory.Code.ObserveGenerator</RootNamespace>
+   </PropertyGroup>
+
+   <PropertyGroup>
+      <Title>Beskar.Memory.Code.ObserveGenerator</Title>
+      <Description>Generates high-performance observability Activity, Meter, and Instrument extensions backed by Beskar.Memory.</Description>
+      <Authors>Marvin Drude</Authors>
+      <PackageLicenseExpression>MIT</PackageLicenseExpression>
+      <PackageReadmeFile>README.md</PackageReadmeFile>
+      <PublishRepositoryUrl>true</PublishRepositoryUrl>
+      <RepositoryUrl>https://github.com/MarvinDrude/Beskar.Memory</RepositoryUrl>
+      <IncludeSymbols>true</IncludeSymbols>
+      <IncludeSource>true</IncludeSource>
+      <EmbedUntrackedSources>true</EmbedUntrackedSources>
+      <SymbolPackageFormat>snupkg</SymbolPackageFormat>
+   </PropertyGroup>
+
+   <ItemGroup>
+      <None Include="README.md" Pack="true" PackagePath="\" />
+   </ItemGroup>
+
+   <ItemGroup>
+      <ProjectReference 
+         Include="..\..\Generators\Beskar.Memory.Code.ObserveGenerator.Generator\Beskar.Memory.Code.ObserveGenerator.Generator.csproj"
+         ReferenceOutputAssembly="false" />
+         
+      <None Include="..\..\Generators\Beskar.Memory.Code.ObserveGenerator.Generator\bin\$(Configuration)\net10.0\Beskar.Memory.Code.ObserveGenerator.Generator.dll" 
+            Pack="true" 
+            PackagePath="analyzers/dotnet/cs" 
+            Visible="false" />
+          
+      <ProjectReference Include="..\..\Common\Beskar.Memory\Beskar.Memory.csproj" />
+   </ItemGroup>
+
+</Project>
