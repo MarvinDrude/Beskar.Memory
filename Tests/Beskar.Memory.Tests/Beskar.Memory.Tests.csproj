@@ -15,6 +15,7 @@
 
    <ItemGroup>
      <Folder Include="Owners\" />
+     <Folder Include="Writers\" />
    </ItemGroup>
 
 </Project>
