@@ -27,14 +27,15 @@
    </ItemGroup>
 
    <ItemGroup>
-      <!-- Package the Generator inside analyzers/dotnet/cs -->
       <ProjectReference 
          Include="..\..\Generators\Beskar.Memory.Code.TypeIdGenerator.Generator\Beskar.Memory.Code.TypeIdGenerator.Generator.csproj"
-         OutputItemType="Analyzer"
-         ReferenceOutputAssembly="false"
-         Pack="true"
-         PackagePath="analyzers/dotnet/cs" />
+         ReferenceOutputAssembly="false" />
          
+      <None Include="..\..\Generators\Beskar.Memory.Code.TypeIdGenerator.Generator\bin\$(Configuration)\net10.0\Beskar.Memory.Code.TypeIdGenerator.Generator.dll" 
+            Pack="true" 
+            PackagePath="analyzers/dotnet/cs" 
+            Visible="false" />
+          
       <ProjectReference Include="..\..\Common\Beskar.Memory\Beskar.Memory.csproj" />
    </ItemGroup>
 
