@@ -1,11 +1,22 @@
-﻿using Beskar.Memory.Code.Models.Symbols;
+using Beskar.Memory.Code.Models.Symbols;
 using Beskar.Memory.Code.Transformers.Archetypes.Options;
 using Microsoft.CodeAnalysis;
 
 namespace Beskar.Memory.Code.Transformers.Symbols;
 
+/// <summary>
+/// Provides transformation methods to convert an <see cref="ISymbol"/> into a general <see cref="SymbolSpec"/>.
+/// </summary>
 public static class SymbolSpecTransformer
 {
+   /// <summary>
+   /// Transforms the specified compiler symbol into a general symbol specification.
+   /// </summary>
+   /// <typeparam name="TSymbol">The type of the compiler symbol.</typeparam>
+   /// <param name="symbol">The compiler symbol to transform.</param>
+   /// <param name="depth">The current depth of recursive transformation.</param>
+   /// <param name="options">The transformation options and cache context, or <c>null</c> to use defaults.</param>
+   /// <returns>A transformed <see cref="SymbolSpec"/>.</returns>
    public static SymbolSpec Transform<TSymbol>(
       TSymbol symbol,
       int depth = 1,
@@ -47,4 +58,3 @@ public static class SymbolSpecTransformer
       return spec;
    }
 }
-

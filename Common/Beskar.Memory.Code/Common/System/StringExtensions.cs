@@ -1,14 +1,21 @@
-﻿using Beskar.Memory.Buffers;
+using Beskar.Memory.Buffers;
 using Beskar.Memory.Writers;
 using Beskar.Memory.Flags;
 using Beskar.Memory.Owners;
 
 namespace Beskar.Memory.Code.Common.System;
 
+/// <summary>
+/// Provides extension members for <see cref="string"/> to perform common casing and formatting operations.
+/// </summary>
 public static class StringExtensions
 {
    extension(string str)
    {
+      /// <summary>
+      /// Converts the first character of the string to lowercase.
+      /// </summary>
+      /// <returns>The modified string with its first character lowercased.</returns>
       public string FirstCharToLower()
       {
          if (str.Length == 0 || char.IsLower(str[0])) 
@@ -17,6 +24,10 @@ public static class StringExtensions
          return char.ToLowerInvariant(str[0]) + str[1..];
       }
       
+      /// <summary>
+      /// Converts the first character of the string to uppercase.
+      /// </summary>
+      /// <returns>The modified string with its first character uppercased.</returns>
       public string FirstCharToUpper()
       {
          if (str.Length == 0 || char.IsUpper(str[0])) 
@@ -25,6 +36,10 @@ public static class StringExtensions
          return char.ToUpperInvariant(str[0]) + str[1..];
       }
 
+      /// <summary>
+      /// Converts the string to snake_case format.
+      /// </summary>
+      /// <returns>The snake_case formatted string.</returns>
       public string SnakeCase()
       {
          if (string.IsNullOrEmpty(str)) return str;
@@ -52,4 +67,3 @@ public static class StringExtensions
       }
    }
 }
-

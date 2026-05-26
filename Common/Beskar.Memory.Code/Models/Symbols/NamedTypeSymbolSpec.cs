@@ -1,4 +1,4 @@
-﻿using System.Diagnostics;
+using System.Diagnostics;
 using Beskar.Memory.Code.Interfaces.Specs;
 using Beskar.Memory.Code.Models.Symbols.Archetypes;
 using Beskar.Memory.Flags;
@@ -7,21 +7,33 @@ using Microsoft.CodeAnalysis;
 
 namespace Beskar.Memory.Code.Models.Symbols;
 
+/// <summary>
+/// Specifies the characteristics and metadata of a named type symbol (e.g., class, struct, interface, enum).
+/// </summary>
 [DebuggerDisplay("NamedType, Arity: {Arity, nq}")]
 public sealed record NamedTypeSymbolSpec
 {
+   /// <summary>
+   /// Gets or sets the arity (number of generic type parameters) of the named type.
+   /// </summary>
    public required int Arity { get; init; }
    private PackedBools8 _flags;
    
    private NamedTypeSymbolLoadFlags _loadedFlags;
    private ref NamedTypeSymbolLoadFlags LoadedFlags => ref _loadedFlags;
    
+   /// <summary>
+   /// Gets or sets a value indicating whether the type is file-local.
+   /// </summary>
    public bool IsFileLocal
    {
       get => _flags.Get(0);
       set => _flags.Set(0, value);
    }
 
+   /// <summary>
+   /// Gets or sets a value indicating whether the type is an enum.
+   /// </summary>
    public bool IsEnum
    {
       get => _flags.Get(1);
@@ -29,6 +41,11 @@ public sealed record NamedTypeSymbolSpec
    }
    
    private SequenceArray<MethodSymbolArchetype>? _methods;
+
+   /// <summary>
+   /// Gets or sets the sequence of methods defined in the named type.
+   /// </summary>
+   /// <exception cref="InvalidOperationException">Thrown if the methods are accessed before they are loaded or are unexpectedly null.</exception>
    public SequenceArray<MethodSymbolArchetype> Methods
    {
       get => LoadedFlags.Methods 
@@ -42,6 +59,11 @@ public sealed record NamedTypeSymbolSpec
    }
    
    private SequenceArray<PropertySymbolArchetype>? _properties;
+
+   /// <summary>
+   /// Gets or sets the sequence of properties defined in the named type.
+   /// </summary>
+   /// <exception cref="InvalidOperationException">Thrown if the properties are accessed before they are loaded or are unexpectedly null.</exception>
    public SequenceArray<PropertySymbolArchetype> Properties
    {
       get => LoadedFlags.Properties 
@@ -55,6 +77,11 @@ public sealed record NamedTypeSymbolSpec
    }
    
    private SequenceArray<FieldSymbolArchetype>? _fields;
+
+   /// <summary>
+   /// Gets or sets the sequence of fields defined in the named type.
+   /// </summary>
+   /// <exception cref="InvalidOperationException">Thrown if the fields are accessed before they are loaded or are unexpectedly null.</exception>
    public SequenceArray<FieldSymbolArchetype> Fields
    {
       get => LoadedFlags.Fields 
@@ -68,6 +95,11 @@ public sealed record NamedTypeSymbolSpec
    }
    
    private SequenceArray<TypeParameterArchetype>? _typeParameters;
+
+   /// <summary>
+   /// Gets or sets the sequence of type parameters for a generic named type.
+   /// </summary>
+   /// <exception cref="InvalidOperationException">Thrown if the type parameters are accessed before they are loaded or are unexpectedly null.</exception>
    public SequenceArray<TypeParameterArchetype> TypeParameters
    {
       get => LoadedFlags.TypeParameters 
@@ -81,6 +113,11 @@ public sealed record NamedTypeSymbolSpec
    }
    
    private SequenceArray<TypeSymbolArchetype>? _typeArguments;
+
+   /// <summary>
+   /// Gets or sets the sequence of type arguments for a generic named type.
+   /// </summary>
+   /// <exception cref="InvalidOperationException">Thrown if the type arguments are accessed before they are loaded or are unexpectedly null.</exception>
    public SequenceArray<TypeSymbolArchetype> TypeArguments
    {
       get => LoadedFlags.TypeArguments 
@@ -94,6 +131,11 @@ public sealed record NamedTypeSymbolSpec
    }
    
    private SequenceArray<NullableAnnotation>? _typeArgumentNullableAnnotations;
+
+   /// <summary>
+   /// Gets or sets the sequence of nullable annotations for type arguments of the named type.
+   /// </summary>
+   /// <exception cref="InvalidOperationException">Thrown if the annotations are accessed before they are loaded or are unexpectedly null.</exception>
    public SequenceArray<NullableAnnotation> TypeArgumentNullableAnnotations
    {
       get => LoadedFlags.TypeArgumentNullableAnnotations 
@@ -107,6 +149,11 @@ public sealed record NamedTypeSymbolSpec
    }
    
    private SequenceArray<IAttributeSpec>? _attributes;
+
+   /// <summary>
+   /// Gets or sets the sequence of attributes applied to the named type.
+   /// </summary>
+   /// <exception cref="InvalidOperationException">Thrown if the attributes are accessed before they are loaded or are unexpectedly null.</exception>
    public SequenceArray<IAttributeSpec> Attributes
    {
       get => LoadedFlags.Attributes 
@@ -120,50 +167,73 @@ public sealed record NamedTypeSymbolSpec
    }
 }
 
+/// <summary>
+/// Represents the lazy-loading state flags for named type symbol properties.
+/// </summary>
 public record struct NamedTypeSymbolLoadFlags
 {
    private PackedBools8 Flags;
 
+   /// <summary>
+   /// Gets or sets a value indicating whether the methods have been loaded.
+   /// </summary>
    public bool Methods
    {
       get => Flags.Get(0);
       set => Flags.Set(0, value);
    }
 
+   /// <summary>
+   /// Gets or sets a value indicating whether the type parameters have been loaded.
+   /// </summary>
    public bool TypeParameters
    {
       get => Flags.Get(1);
       set => Flags.Set(1, value);
    }
 
+   /// <summary>
+   /// Gets or sets a value indicating whether the type arguments have been loaded.
+   /// </summary>
    public bool TypeArguments
    {
       get => Flags.Get(2);
       set => Flags.Set(2, value);
    }
  
+   /// <summary>
+   /// Gets or sets a value indicating whether the type argument nullable annotations have been loaded.
+   /// </summary>
    public bool TypeArgumentNullableAnnotations
    {
       get => Flags.Get(3);
       set => Flags.Set(3, value);
    }
    
+   /// <summary>
+   /// Gets or sets a value indicating whether the attributes have been loaded.
+   /// </summary>
    public bool Attributes
    {
       get => Flags.Get(4);
       set => Flags.Set(4, value);
    }
    
+   /// <summary>
+   /// Gets or sets a value indicating whether the properties have been loaded.
+   /// </summary>
    public bool Properties
    {
       get => Flags.Get(5);
       set => Flags.Set(5, value);
    }
    
+   /// <summary>
+   /// Gets or sets a value indicating whether the fields have been loaded.
+   /// </summary>
    public bool Fields
    {
       get => Flags.Get(6);
       set => Flags.Set(6, value);
    }
 }
-

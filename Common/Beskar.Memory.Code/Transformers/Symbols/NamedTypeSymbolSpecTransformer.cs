@@ -1,12 +1,22 @@
-﻿using Beskar.Memory.Code.Models.Symbols;
+using Beskar.Memory.Code.Models.Symbols;
 using Beskar.Memory.Code.Transformers.Archetypes;
 using Beskar.Memory.Code.Transformers.Archetypes.Options;
 using Microsoft.CodeAnalysis;
 
 namespace Beskar.Memory.Code.Transformers.Symbols;
 
+/// <summary>
+/// Provides transformation methods to convert an <see cref="INamedTypeSymbol"/> into a <see cref="NamedTypeSymbolSpec"/>.
+/// </summary>
 public static class NamedTypeSymbolSpecTransformer
 {
+   /// <summary>
+   /// Transforms the specified compiler named type symbol into a named type symbol specification.
+   /// </summary>
+   /// <param name="namedTypeSymbol">The compiler named type symbol to transform.</param>
+   /// <param name="depth">The current depth of recursive transformation.</param>
+   /// <param name="options">The transformation options and cache context, or <c>null</c> to use defaults.</param>
+   /// <returns>A transformed <see cref="NamedTypeSymbolSpec"/>.</returns>
    public static NamedTypeSymbolSpec Transform(
       INamedTypeSymbol namedTypeSymbol,
       int depth = 1,
@@ -94,4 +104,3 @@ public static class NamedTypeSymbolSpecTransformer
       return spec;
    }
 }
-

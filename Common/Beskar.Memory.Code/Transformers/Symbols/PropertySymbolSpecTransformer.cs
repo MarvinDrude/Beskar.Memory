@@ -1,12 +1,22 @@
-﻿using Beskar.Memory.Code.Models.Symbols;
+using Beskar.Memory.Code.Models.Symbols;
 using Beskar.Memory.Code.Transformers.Archetypes;
 using Beskar.Memory.Code.Transformers.Archetypes.Options;
 using Microsoft.CodeAnalysis;
 
 namespace Beskar.Memory.Code.Transformers.Symbols;
 
+/// <summary>
+/// Provides transformation methods to convert an <see cref="IPropertySymbol"/> into a <see cref="PropertySymbolSpec"/>.
+/// </summary>
 public static class PropertySymbolSpecTransformer
 {
+   /// <summary>
+   /// Transforms the specified compiler property symbol into a property symbol specification.
+   /// </summary>
+   /// <param name="propertySymbol">The compiler property symbol to transform.</param>
+   /// <param name="depth">The current depth of recursive transformation.</param>
+   /// <param name="options">The transformation options and cache context, or <c>null</c> to use defaults.</param>
+   /// <returns>A transformed <see cref="PropertySymbolSpec"/>.</returns>
    public static PropertySymbolSpec Transform(
       IPropertySymbol propertySymbol,
       int depth = 1,
@@ -57,4 +67,3 @@ public static class PropertySymbolSpecTransformer
       return spec;
    }
 }
-
