@@ -1,4 +1,4 @@
-using Beskar.Memory.Code.Common.Enums;
+﻿using Beskar.Memory.Code.Common.Enums;
 using Beskar.Memory.Code.Common.Specs;
 using Beskar.Memory.Code.Common.Symbols;
 using Beskar.Memory.Code.Rendering;

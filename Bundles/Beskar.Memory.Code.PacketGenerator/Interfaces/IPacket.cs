@@ -1,3 +1,3 @@
-namespace Beskar.Memory.Code.PacketGenerator.Interfaces;
+﻿namespace Beskar.Memory.Code.PacketGenerator.Interfaces;
 
 public interface IPacket;

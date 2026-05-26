@@ -1,4 +1,4 @@
-using Beskar.Memory.Code.ObserveGenerator.Attributes;
+﻿using Beskar.Memory.Code.ObserveGenerator.Attributes;
 using Beskar.Memory.Code.ObserveGenerator.Enums;
 
 namespace Beskar.Memory.Code.ObserveGenerator.Tests.Scenarios.Simple;

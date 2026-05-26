@@ -1,4 +1,4 @@
-using Beskar.Memory.Code.Models.Symbols.Archetypes;
+﻿using Beskar.Memory.Code.Models.Symbols.Archetypes;
 
 namespace Beskar.Memory.Code.EnumGenerator.Generator.Models;
 

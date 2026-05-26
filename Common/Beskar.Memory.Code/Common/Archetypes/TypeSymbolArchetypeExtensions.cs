@@ -1,4 +1,4 @@
-using Beskar.Memory.Code.Common.Specs;
+﻿using Beskar.Memory.Code.Common.Specs;
 using Beskar.Memory.Code.Models.Symbols.Archetypes;
 
 namespace Beskar.Memory.Code.Common.Archetypes;

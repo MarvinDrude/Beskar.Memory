@@ -1,4 +1,4 @@
-using System.Diagnostics;
+﻿using System.Diagnostics;
 
 namespace Beskar.Memory.Code.Models.Symbols.Archetypes;
 

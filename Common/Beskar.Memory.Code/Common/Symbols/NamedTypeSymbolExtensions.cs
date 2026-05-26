@@ -1,4 +1,4 @@
-using Beskar.Memory.Code.Models.Symbols.Archetypes;
+﻿using Beskar.Memory.Code.Models.Symbols.Archetypes;
 using Beskar.Memory.Code.Transformers.Archetypes;
 using Beskar.Memory.Code.Transformers.Archetypes.Options;
 using Microsoft.CodeAnalysis;

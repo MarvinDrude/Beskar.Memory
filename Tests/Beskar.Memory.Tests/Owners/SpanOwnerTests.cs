@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Buffers;
 using Xunit;
 using Beskar.Memory.Owners;

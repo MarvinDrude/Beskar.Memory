@@ -1,4 +1,4 @@
-namespace Beskar.Memory.Code.PacketGenerator.Attributes;
+﻿namespace Beskar.Memory.Code.PacketGenerator.Attributes;
 
 [AttributeUsage(AttributeTargets.Class | AttributeTargets.Struct)]
 public sealed class PacketAttribute(

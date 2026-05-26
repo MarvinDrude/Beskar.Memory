@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Threading.Channels;
 
 namespace Beskar.Memory.Threading;

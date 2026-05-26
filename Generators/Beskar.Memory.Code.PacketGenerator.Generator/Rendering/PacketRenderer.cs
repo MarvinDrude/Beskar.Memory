@@ -1,4 +1,4 @@
-using System.Collections.Immutable;
+﻿using System.Collections.Immutable;
 using Beskar.Memory.Code.Rendering;
 using Beskar.Memory.Code.PacketGenerator.Generator.Models;
 using Beskar.Memory.Code;

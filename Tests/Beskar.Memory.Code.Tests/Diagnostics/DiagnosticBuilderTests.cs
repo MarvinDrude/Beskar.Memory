@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using Xunit;
 using Beskar.Memory.Code.Diagnostics;
 using Beskar.Memory.Code.Models.Diagnostics;

@@ -1,4 +1,4 @@
-using System.Collections.Immutable;
+﻿using System.Collections.Immutable;
 using Beskar.Memory.Code.Common;
 using Beskar.Memory.Code.Common.Specs;
 using Beskar.Memory.Code.Models.Diagnostics;

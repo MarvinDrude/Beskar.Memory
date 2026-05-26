@@ -1,4 +1,4 @@
-extern alias Generator;
+﻿extern alias Generator;
 
 using Beskar.Memory.Writers;
 using Beskar.Memory.Code.PacketGenerator.Attributes;

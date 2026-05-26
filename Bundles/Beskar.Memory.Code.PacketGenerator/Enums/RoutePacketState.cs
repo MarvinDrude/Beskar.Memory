@@ -1,4 +1,4 @@
-namespace Beskar.Memory.Code.PacketGenerator.Enums;
+﻿namespace Beskar.Memory.Code.PacketGenerator.Enums;
 
 public enum RoutePacketState : byte
 {

@@ -1,4 +1,4 @@
-using Basic.Reference.Assemblies;
+﻿using Basic.Reference.Assemblies;
 using Beskar.Memory.Tests.Utils;
 
 namespace Beskar.Memory.Code.TypeIdGenerator.Tests.Constants;

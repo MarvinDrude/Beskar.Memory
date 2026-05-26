@@ -1,4 +1,4 @@
-using System.Reflection;
+﻿using System.Reflection;
 using Microsoft.CodeAnalysis;
 
 namespace Beskar.Memory.Code.EnumGenerator.Generator;

@@ -1,4 +1,4 @@
-using Beskar.Memory.Code.Interfaces.Specs;
+﻿using Beskar.Memory.Code.Interfaces.Specs;
 using Beskar.Memory.Code.Models.Symbols.Archetypes;
 using Beskar.Memory.Flags;
 using Beskar.Memory.Collections;

@@ -1,4 +1,4 @@
-using Beskar.Memory.Code.PacketGenerator.Interfaces;
+﻿using Beskar.Memory.Code.PacketGenerator.Interfaces;
 
 namespace Beskar.Memory.Code.PacketGenerator.Models;
 

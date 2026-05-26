@@ -1,4 +1,4 @@
-namespace Beskar.Memory.Code.Transformers.Symbols.Options;
+﻿namespace Beskar.Memory.Code.Transformers.Symbols.Options;
 
 /// <summary>
 /// Provides a base class for symbol transformation options, managing recursive depth and loaded feature flags.

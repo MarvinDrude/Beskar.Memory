@@ -1,4 +1,4 @@
-using Beskar.Memory.Code.Common;
+﻿using Beskar.Memory.Code.Common;
 using Beskar.Memory.Code.Common.Symbols;
 using Beskar.Memory.Code.Diagnostics;
 using Beskar.Memory.Code.Models.Diagnostics;

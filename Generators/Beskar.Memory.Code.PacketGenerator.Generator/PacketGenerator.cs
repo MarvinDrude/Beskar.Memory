@@ -1,4 +1,4 @@
-using System.Reflection;
+﻿using System.Reflection;
 using Beskar.Memory.Code.PacketGenerator.Generator.Models;
 using Beskar.Memory.Collections;
 using Microsoft.CodeAnalysis;

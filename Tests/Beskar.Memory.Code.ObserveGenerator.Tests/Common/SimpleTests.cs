@@ -1,4 +1,4 @@
-extern alias Generator;
+﻿extern alias Generator;
 
 using Beskar.Memory.Code.ObserveGenerator.Attributes;
 using Beskar.Memory.Code.ObserveGenerator.Tests.Constants;

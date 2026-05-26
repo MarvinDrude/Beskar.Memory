@@ -1,4 +1,4 @@
-using Beskar.Memory.Code.Models.Symbols.Archetypes;
+﻿using Beskar.Memory.Code.Models.Symbols.Archetypes;
 using Beskar.Memory.Collections;
 
 namespace Beskar.Memory.Code.ObserveGenerator.Generator.Models;

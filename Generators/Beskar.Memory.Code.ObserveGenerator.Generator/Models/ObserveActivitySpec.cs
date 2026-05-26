@@ -1,4 +1,4 @@
-using Beskar.Memory.Code.Common;
+﻿using Beskar.Memory.Code.Common;
 using Beskar.Memory.Code.Interfaces.Specs;
 using Microsoft.CodeAnalysis;
 

@@ -1,4 +1,4 @@
-using Beskar.Memory.Code.Common;
+﻿using Beskar.Memory.Code.Common;
 using Beskar.Memory.Code.Models.Diagnostics;
 using Beskar.Memory.Code.EnumGenerator.Generator.Models;
 using Beskar.Memory.Code.EnumGenerator.Generator.Rendering;

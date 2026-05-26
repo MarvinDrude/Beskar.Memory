@@ -1,4 +1,4 @@
-namespace Beskar.Memory.Code.ObserveGenerator.Enums;
+﻿namespace Beskar.Memory.Code.ObserveGenerator.Enums;
 
 public enum InstrumentKind
 {

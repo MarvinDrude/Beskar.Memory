@@ -1,4 +1,4 @@
-using System.Diagnostics.CodeAnalysis;
+﻿using System.Diagnostics.CodeAnalysis;
 using Beskar.Memory.Code.Interfaces.Specs;
 using Beskar.Memory.Code.Transformers.Symbols.Options;
 using Beskar.Memory.Collections;

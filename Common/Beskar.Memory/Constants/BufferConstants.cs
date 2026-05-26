@@ -1,4 +1,4 @@
-namespace Beskar.Memory.Constants;
+﻿namespace Beskar.Memory.Constants;
 
 /// <summary>
 /// Defines buffer-related constants used throughout the memory package.

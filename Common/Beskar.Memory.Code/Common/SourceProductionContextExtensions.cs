@@ -1,4 +1,4 @@
-using Beskar.Memory.Code.Models.Diagnostics;
+﻿using Beskar.Memory.Code.Models.Diagnostics;
 using Microsoft.CodeAnalysis;
 
 namespace Beskar.Memory.Code.Common;

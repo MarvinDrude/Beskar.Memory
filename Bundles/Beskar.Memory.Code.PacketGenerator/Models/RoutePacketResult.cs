@@ -1,4 +1,4 @@
-using Beskar.Memory.Code.PacketGenerator.Enums;
+﻿using Beskar.Memory.Code.PacketGenerator.Enums;
 
 namespace Beskar.Memory.Code.PacketGenerator.Models;
 

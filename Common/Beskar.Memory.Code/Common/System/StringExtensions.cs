@@ -1,4 +1,4 @@
-using Beskar.Memory.Buffers;
+﻿using Beskar.Memory.Buffers;
 using Beskar.Memory.Writers;
 using Beskar.Memory.Flags;
 using Beskar.Memory.Owners;

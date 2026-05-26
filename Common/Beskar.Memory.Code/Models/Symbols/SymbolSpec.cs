@@ -1,4 +1,4 @@
-using System.Diagnostics;
+﻿using System.Diagnostics;
 using Beskar.Memory.Code.Interfaces.Specs;
 using Beskar.Memory.Flags;
 using Beskar.Memory.Collections;

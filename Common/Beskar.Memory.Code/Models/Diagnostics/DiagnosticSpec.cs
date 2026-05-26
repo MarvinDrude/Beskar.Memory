@@ -1,4 +1,4 @@
-using Beskar.Memory.Collections;
+﻿using Beskar.Memory.Collections;
 
 namespace Beskar.Memory.Code.Models.Diagnostics;
 

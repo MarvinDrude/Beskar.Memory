@@ -1,4 +1,4 @@
-using Beskar.Memory.Code.EnumGenerator.Generator.Models;
+﻿using Beskar.Memory.Code.EnumGenerator.Generator.Models;
 using Beskar.Memory.Code.Common.Enums;
 using Beskar.Memory.Code.Models.Symbols.Archetypes;
 using Beskar.Memory.Code.Rendering;

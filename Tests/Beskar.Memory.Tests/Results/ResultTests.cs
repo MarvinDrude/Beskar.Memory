@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using Xunit;
 using Beskar.Memory.Results;
 using Beskar.Memory.Results.Errors;

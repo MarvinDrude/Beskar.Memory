@@ -1,4 +1,4 @@
-using Beskar.Memory.Code.EnumGenerator.Attributes;
+﻿using Beskar.Memory.Code.EnumGenerator.Attributes;
 
 [FastEnum]
 public enum TestGlobalEnum : long

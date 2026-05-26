@@ -1,4 +1,4 @@
-using Beskar.Memory.Code.Models.Symbols;
+﻿using Beskar.Memory.Code.Models.Symbols;
 using Beskar.Memory.Flags;
 
 namespace Beskar.Memory.Code.Transformers.Symbols.Options;

@@ -1,4 +1,4 @@
-namespace Beskar.Memory.Code.PacketGenerator.Common;
+﻿namespace Beskar.Memory.Code.PacketGenerator.Common;
 
 public sealed class PacketRegistryOptions
 {

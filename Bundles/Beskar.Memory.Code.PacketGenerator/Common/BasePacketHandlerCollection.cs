@@ -1,4 +1,4 @@
-using System.Buffers;
+﻿using System.Buffers;
 using System.Collections.Concurrent;
 using Beskar.Memory.Code.PacketGenerator.Enums;
 using Beskar.Memory.Code.PacketGenerator.Interfaces;
