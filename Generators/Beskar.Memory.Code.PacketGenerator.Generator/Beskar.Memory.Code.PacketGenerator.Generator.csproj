@@ -1,0 +1,31 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+   <PropertyGroup>
+      <TargetFramework>net10.0</TargetFramework>
+      <ImplicitUsings>enable</ImplicitUsings>
+      <Nullable>enable</Nullable>
+      <IsPackable>false</IsPackable>
+      <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+      <RootNamespace>Beskar.Memory.Code.PacketGenerator.Generator</RootNamespace>
+      <EnforceExtendedAnalyzerRules>true</EnforceExtendedAnalyzerRules>
+      <NoWarn>$(NoWarn);RS1041;RS1035;RS2008</NoWarn>
+   </PropertyGroup>
+
+   <ItemGroup>
+      <PackageReference Include="Microsoft.CodeAnalysis.Common" PrivateAssets="all" />
+      <PackageReference Include="Microsoft.CodeAnalysis.CSharp" PrivateAssets="all" />
+   </ItemGroup>
+
+   <ItemGroup>
+      <!-- Inline the source files of Beskar.Memory -->
+      <Compile Include="..\..\Common\Beskar.Memory\**\*.cs"
+               Exclude="..\..\Common\Beskar.Memory\obj\**;..\..\Common\Beskar.Memory\bin\**"
+               Link="Beskar.Memory\%(RecursiveDir)%(Filename)%(Extension)" />
+               
+      <!-- Inline the source files of Beskar.Memory.Code -->
+      <Compile Include="..\..\Common\Beskar.Memory.Code\**\*.cs"
+               Exclude="..\..\Common\Beskar.Memory.Code\obj\**;..\..\Common\Beskar.Memory.Code\bin\**"
+               Link="Beskar.Memory.Code\%(RecursiveDir)%(Filename)%(Extension)" />
+   </ItemGroup>
+
+</Project>
