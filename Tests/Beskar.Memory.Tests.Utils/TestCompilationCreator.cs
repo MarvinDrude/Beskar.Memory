@@ -7,6 +7,7 @@ using System.Threading;
 using Beskar.Memory.Code;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
+using Microsoft.CodeAnalysis.Diagnostics;
 
 namespace Beskar.Memory.Tests.Utils;
 
@@ -22,7 +23,14 @@ public sealed class TestCompilationCreator
    private bool _enableNullable = true;
    private string _assemblyName = "TestAssembly";
    private CSharpCompilationOptions _compOptions = new (OutputKind.DynamicallyLinkedLibrary);
-   
+   private readonly Dictionary<string, string> _globalOptions = new(StringComparer.OrdinalIgnoreCase);
+
+   public TestCompilationCreator WithGlobalOption(string key, string value)
+   {
+      _globalOptions[key] = value;
+      return this;
+   }
+
    public TestCompilationResult Create(CancellationToken ct = default)
    {
       _compOptions = _compOptions.WithNullableContextOptions(_enableNullable 
@@ -45,7 +53,8 @@ public sealed class TestCompilationCreator
       {
          GeneratorDriver driver = CSharpGeneratorDriver.Create(
             _sourcesGenerators.Select(g => g.AsSourceGenerator()).ToArray(),
-            parseOptions: syntaxTreeOptions);
+            parseOptions: syntaxTreeOptions,
+            optionsProvider: new TestAnalyzerConfigOptionsProvider(_globalOptions));
          
          driver = driver.RunGenerators(compilation, cancellationToken: ct);
          
@@ -238,5 +247,24 @@ public sealed class TestCompilationResult
       {
          writer.Dispose();
       }
+   }
+}
+
+public sealed class TestAnalyzerConfigOptionsProvider(Dictionary<string, string> globalOptions) : AnalyzerConfigOptionsProvider
+{
+   private readonly AnalyzerConfigOptions _globalOptions = new TestAnalyzerConfigOptions(globalOptions);
+
+   public override AnalyzerConfigOptions GetOptions(SyntaxTree tree) => TestAnalyzerConfigOptions.Empty;
+   public override AnalyzerConfigOptions GetOptions(AdditionalText text) => TestAnalyzerConfigOptions.Empty;
+   public override AnalyzerConfigOptions GlobalOptions => _globalOptions;
+}
+
+public sealed class TestAnalyzerConfigOptions(Dictionary<string, string> options) : AnalyzerConfigOptions
+{
+   public static readonly TestAnalyzerConfigOptions Empty = new([]);
+
+   public override bool TryGetValue(string key, [System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out string? value)
+   {
+      return options.TryGetValue(key, out value);
    }
 }
