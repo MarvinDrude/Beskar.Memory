@@ -2,8 +2,6 @@ using System;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
 
-[assembly: InternalsVisibleTo("Beskar.Memory.Tests")]
-
 namespace Beskar.Memory.Timing;
 
 /// <summary>

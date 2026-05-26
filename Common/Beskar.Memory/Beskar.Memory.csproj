@@ -1,18 +1,38 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
    <PropertyGroup>
       <TargetFramework>net10.0</TargetFramework>
       <ImplicitUsings>enable</ImplicitUsings>
       <Nullable>enable</Nullable>
+      <IsPackable>true</IsPackable>
       <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+      <RootNamespace>Beskar.Memory</RootNamespace>
+   </PropertyGroup>
+
+   <PropertyGroup>
+      <Title>Beskar.Memory</Title>
+      <Description>Internal Use.</Description>
+      <Authors>Marvin Drude</Authors>
+      <PackageLicenseExpression>MIT</PackageLicenseExpression>
+      <PackageReadmeFile>README.md</PackageReadmeFile>
+      <PublishRepositoryUrl>true</PublishRepositoryUrl>
+      <RepositoryUrl>https://github.com/MarvinDrude/Beskar.Memory</RepositoryUrl>
+      <IncludeSymbols>true</IncludeSymbols>
+      <IncludeSource>true</IncludeSource>
+      <EmbedUntrackedSources>true</EmbedUntrackedSources>
+      <SymbolPackageFormat>snupkg</SymbolPackageFormat>
    </PropertyGroup>
 
    <ItemGroup>
-     <Folder Include="Buffers\" />
-     <Folder Include="Flags\" />
-     <Folder Include="Results\" />
-     <Folder Include="Threading\" />
-     <Folder Include="Timing\" />
+      <InternalsVisibleTo Include="Beskar.Memory.Tests" />
+      <None Include="README.md" Pack="true" PackagePath="\" />
+   </ItemGroup>
+
+   <ItemGroup>
+      <PackageReference Include="Microsoft.SourceLink.GitHub">
+         <PrivateAssets>all</PrivateAssets>
+         <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+      </PackageReference>
    </ItemGroup>
 
 </Project>
