@@ -10,13 +10,16 @@
 
    <ItemGroup>
       <PackageReference Include="Basic.Reference.Assemblies.Net100" />
-      <PackageReference Include="TUnit" />
+      <PackageReference Include="Microsoft.NET.Test.Sdk" />
+      <PackageReference Include="xunit" />
+      <PackageReference Include="xunit.runner.visualstudio" />
       <PackageReference Include="Microsoft.CodeAnalysis.CSharp" />
    </ItemGroup>
 
    <ItemGroup>
       <ProjectReference Include="..\..\Bundles\Beskar.Memory.Code.TypeIdGenerator\Beskar.Memory.Code.TypeIdGenerator.csproj" />
       <ProjectReference Include="..\..\Generators\Beskar.Memory.Code.TypeIdGenerator.Generator\Beskar.Memory.Code.TypeIdGenerator.Generator.csproj" Aliases="Generator" />
+      <ProjectReference Include="..\Beskar.Memory.Tests.Utils\Beskar.Memory.Tests.Utils.csproj" />
    </ItemGroup>
 
 </Project>

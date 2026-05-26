@@ -1,0 +1,18 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+   <PropertyGroup>
+      <TargetFramework>net10.0</TargetFramework>
+      <ImplicitUsings>disable</ImplicitUsings>
+      <Nullable>enable</Nullable>
+      <IsPackable>false</IsPackable>
+   </PropertyGroup>
+
+   <ItemGroup>
+      <PackageReference Include="Microsoft.CodeAnalysis.CSharp" />
+   </ItemGroup>
+
+   <ItemGroup>
+      <ProjectReference Include="..\..\Common\Beskar.Memory\Beskar.Memory.csproj" />
+   </ItemGroup>
+
+</Project>

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.IO;
@@ -8,7 +8,7 @@ using Beskar.Memory.Code;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 
-namespace Beskar.Memory.Code.TypeIdGenerator.Tests.Common;
+namespace Beskar.Memory.Tests.Utils;
 
 public sealed class TestCompilationCreator
 {

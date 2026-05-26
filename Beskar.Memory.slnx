@@ -26,5 +26,6 @@
     <Project Path="Tests/Beskar.Memory.Tests/Beskar.Memory.Tests.csproj" />
     <Project Path="Tests/Beskar.Memory.Code.TypeIdGenerator.Tests/Beskar.Memory.Code.TypeIdGenerator.Tests.csproj" />
     <Project Path="Tests/Beskar.Memory.Code.Tests/Beskar.Memory.Code.Tests.csproj" />
+    <Project Path="Tests/Beskar.Memory.Tests.Utils/Beskar.Memory.Tests.Utils.csproj" />
   </Folder>
 </Solution>
