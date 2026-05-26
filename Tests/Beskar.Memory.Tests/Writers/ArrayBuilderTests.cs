@@ -102,4 +102,74 @@ public class ArrayBuilderTests
       Assert.Throws<ObjectDisposedException>(() => builder.Set(0, 1));
       Assert.Throws<ObjectDisposedException>(() => builder.Clear());
    }
+
+   [Fact]
+   public void ConstructorResultWithInitialSpan()
+   {
+      var builder = new ArrayBuilder<int>(4);
+      builder.Add(10);
+      builder.Add(20);
+      
+      var result = new ArrayBuilderResult<int>(builder);
+      
+      Assert.True(result.HasValue);
+      Assert.Equal(2, result.WrittenSpan.Length);
+      Assert.Equal(10, result.WrittenSpan[0]);
+      Assert.Equal(20, result.WrittenSpan[1]);
+      
+      result.Dispose();
+   }
+
+   [Fact]
+   public void ConstructorResultWithEmpty()
+   {
+      var result = ArrayBuilderResult<int>.Empty;
+      
+      Assert.False(result.HasValue);
+      Assert.True(result.WrittenSpan.IsEmpty);
+      
+      result.Dispose();
+   }
+
+   [Fact]
+   public void ResultImplicitOperators()
+   {
+      var builder = new ArrayBuilder<int>(4);
+      builder.Add(42);
+      
+      ArrayBuilderResult<int> result = builder;
+      
+      Assert.True(result.HasValue);
+      
+      Span<int> span = result;
+      ReadOnlySpan<int> readOnlySpan = result;
+      
+      Assert.Equal(1, span.Length);
+      Assert.Equal(42, span[0]);
+      Assert.Equal(1, readOnlySpan.Length);
+      Assert.Equal(42, readOnlySpan[0]);
+      
+      result.Dispose();
+   }
+
+   [Fact]
+   public void ResultDisposalSafety()
+   {
+      var builder = new ArrayBuilder<int>(4);
+      builder.Add(10);
+      
+      var result = new ArrayBuilderResult<int>(builder);
+      result.Dispose();
+      
+      var threwSpan = false;
+      try
+      {
+         var _ = result.WrittenSpan;
+      }
+      catch (ObjectDisposedException)
+      {
+         threwSpan = true;
+      }
+      Assert.True(threwSpan);
+   }
 }
