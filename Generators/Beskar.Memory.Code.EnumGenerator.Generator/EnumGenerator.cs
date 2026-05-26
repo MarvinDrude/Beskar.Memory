@@ -1,5 +1,4 @@
-﻿using System.Reflection;
-using Microsoft.CodeAnalysis;
+﻿using Microsoft.CodeAnalysis;
 
 namespace Beskar.Memory.Code.EnumGenerator.Generator;
 
@@ -7,10 +6,7 @@ namespace Beskar.Memory.Code.EnumGenerator.Generator;
 public sealed partial class EnumGenerator : IIncrementalGenerator
 {
    public const string GeneratorName = "EnumGenerator";
-   
-   public static readonly string GeneratorVersion = typeof(EnumGenerator).Assembly
-      .GetCustomAttribute<AssemblyInformationalVersionAttribute>()?
-      .InformationalVersion.Split('+')[0] ?? "1.0.0";
+   public const string GeneratorVersion = "1.5.1";
    
    public void Initialize(IncrementalGeneratorInitializationContext context)
    {
