@@ -12,6 +12,7 @@
     <File Path="README.md" />
     <File Path="SECURITY.md" />
   </Folder>
+  <Folder Name="/Benchmarks/" />
   <Folder Name="/Bundles/">
     <Project Path="Bundles/Beskar.Memory.Code.TypeIdGenerator/Beskar.Memory.Code.TypeIdGenerator.csproj" />
     <Project Path="Bundles/Beskar.Memory.Code.ObserveGenerator/Beskar.Memory.Code.ObserveGenerator.csproj" />

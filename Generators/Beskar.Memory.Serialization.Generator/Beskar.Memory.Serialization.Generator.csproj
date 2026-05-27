@@ -27,4 +27,8 @@
                Link="Beskar.Memory.Code\%(RecursiveDir)%(Filename)%(Extension)" />
    </ItemGroup>
 
+   <ItemGroup>
+     <Folder Include="Rendering\" />
+   </ItemGroup>
+
 </Project>
