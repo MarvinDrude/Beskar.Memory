@@ -3,6 +3,7 @@ using System.Buffers;
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
+using Beskar.Memory.Owners;
 using Beskar.Memory.Writers;
 
 namespace Beskar.Memory.Serialization;
@@ -12,9 +13,6 @@ namespace Beskar.Memory.Serialization;
 /// </summary>
 public static class BeSerializer
 {
-   [ThreadStatic]
-   private static UnsafePointerMemoryManager? _pointerMemoryManager;
-
    #region Serialization
 
    /// <summary>
@@ -137,27 +135,22 @@ public static class BeSerializer
 
    /// <summary>
    /// Deserializes a value of type <typeparamref name="T"/> from a read-only span of bytes.
-   /// Completely zero-allocation and copy-free using a thread-local unsafe memory manager.
    /// </summary>
    /// <typeparam name="T">The type of the object to deserialize.</typeparam>
    /// <param name="span">The span of bytes to read from.</param>
    /// <returns>The deserialized value.</returns>
    /// <exception cref="InvalidOperationException">Thrown if deserialization fails.</exception>
-   public static unsafe T Deserialize<T>(ReadOnlySpan<byte> span)
+   public static T Deserialize<T>(ReadOnlySpan<byte> span)
    {
       if (span.IsEmpty)
       {
          return Deserialize<T>(ReadOnlySequence<byte>.Empty);
       }
 
-      fixed (byte* ptr = &MemoryMarshal.GetReference(span))
-      {
-         var manager = _pointerMemoryManager ??= new UnsafePointerMemoryManager();
-         manager.Initialize(ptr, span.Length);
+      using var spanOwner = new MemoryOwner<byte>(span.Length);
+      var sequence = new ReadOnlySequence<byte>(spanOwner.Memory);
 
-         var sequence = new ReadOnlySequence<byte>(manager.Memory);
-         return Deserialize<T>(sequence);
-      }
+      return Deserialize<T>(sequence);
    }
 
    /// <summary>
@@ -219,26 +212,22 @@ public static class BeSerializer
 
    /// <summary>
    /// Tries to deserialize a value of type <typeparamref name="T"/> from a read-only span of bytes.
-   /// Completely zero-allocation and copy-free using a thread-local unsafe memory manager.
    /// </summary>
    /// <typeparam name="T">The type of the object to deserialize.</typeparam>
    /// <param name="span">The span of bytes to read from.</param>
    /// <param name="value">When this method returns, contains the deserialized value if successful, or default otherwise.</param>
    /// <returns><see langword="true"/> if deserialization succeeded; otherwise, <see langword="false"/>.</returns>
-   public static unsafe bool TryDeserialize<T>(ReadOnlySpan<byte> span, [MaybeNullWhen(false)] out T value)
+   public static bool TryDeserialize<T>(ReadOnlySpan<byte> span, [MaybeNullWhen(false)] out T value)
    {
       if (span.IsEmpty)
       {
-         return TryDeserialize<T>(ReadOnlySequence<byte>.Empty, out value);
+         return TryDeserialize(ReadOnlySequence<byte>.Empty, out value);
       }
 
-      fixed (byte* ptr = &MemoryMarshal.GetReference(span))
-      {
-         var manager = _pointerMemoryManager ??= new UnsafePointerMemoryManager();
-         manager.Initialize(ptr, span.Length);
-         var sequence = new ReadOnlySequence<byte>(manager.Memory);
-         return TryDeserialize<T>(sequence, out value);
-      }
+      using var spanOwner = new MemoryOwner<byte>(span.Length);
+      var sequence = new ReadOnlySequence<byte>(spanOwner.Memory);
+
+      return TryDeserialize(sequence, out value);
    }
 
    /// <summary>
