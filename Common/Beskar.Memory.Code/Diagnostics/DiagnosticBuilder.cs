@@ -14,17 +14,16 @@ namespace Beskar.Memory.Code.Diagnostics;
 public sealed class DiagnosticBuilder<T>(
    int diagnosticInitialCapacity = 16)
    : IDisposable
-   where T : new()
 {
    private readonly ArrayBuilder<DiagnosticSpec> _diagnostics = new(diagnosticInitialCapacity);
    private bool _isDisposed;
-   
+
    /// <summary>
    /// Creates a new instance of the <see cref="DiagnosticBuilder{T}"/> class with the specified initial capacity.
    /// </summary>
    /// <param name="diagnosticInitialCapacity">The initial capacity of the diagnostic list.</param>
    /// <returns>A new <see cref="DiagnosticBuilder{T}"/> instance.</returns>
-   public static DiagnosticBuilder<T> Create(int diagnosticInitialCapacity = 16) 
+   public static DiagnosticBuilder<T> Create(int diagnosticInitialCapacity = 16)
       => new(diagnosticInitialCapacity);
 
    /// <summary>
@@ -36,7 +35,7 @@ public sealed class DiagnosticBuilder<T>(
    public static MaybeSpec<T> CreateSingle(string diagnosticId, params ReadOnlySpan<string> arguments)
    {
       using var builder = Create(1);
-      
+
       return builder
          .Add(diagnosticId, arguments)
          .Build();
@@ -71,13 +70,13 @@ public sealed class DiagnosticBuilder<T>(
    /// <exception cref="InvalidOperationException">Thrown if the builder has already been disposed.</exception>
    public MaybeSpec<T> Build()
    {
-      if (_isDisposed) 
+      if (_isDisposed)
          throw new InvalidOperationException("Cannot build a disposed DiagnosticBuilder.");
-      
+
       SequenceArray<DiagnosticSpec> diagnostics = [.. _diagnostics.WrittenSpan];
-      return new MaybeSpec<T>(false, new T(), diagnostics);
+      return new MaybeSpec<T>(false, default!, diagnostics);
    }
-   
+
    /// <summary>
    /// Builds a successful or failed specification containing the gathered diagnostics and the specified value.
    /// </summary>
@@ -86,9 +85,9 @@ public sealed class DiagnosticBuilder<T>(
    /// <exception cref="InvalidOperationException">Thrown if the builder has already been disposed.</exception>
    public MaybeSpec<T> Build(T value)
    {
-      if (_isDisposed) 
+      if (_isDisposed)
          throw new InvalidOperationException("Cannot build a disposed DiagnosticBuilder.");
-      
+
       SequenceArray<DiagnosticSpec> diagnostics = [.. _diagnostics.WrittenSpan];
       return new MaybeSpec<T>(true, value, diagnostics);
    }
@@ -99,7 +98,7 @@ public sealed class DiagnosticBuilder<T>(
    public void Dispose()
    {
       if (_isDisposed) return;
-      
+
       _diagnostics.Dispose();
       _isDisposed = true;
    }
