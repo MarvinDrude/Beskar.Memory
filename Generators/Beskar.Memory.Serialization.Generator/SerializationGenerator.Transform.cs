@@ -208,11 +208,11 @@ public sealed partial class SerializationGenerator
 
    private static ArchetypeTransformOptions CreateTransformOptions()
    {
-      return new ArchetypeTransformOptions
+      var options = new ArchetypeTransformOptions
       {
-         NamedTypes =
+         NamedTypes = new NamedTypeTransformOptions
          {
-            Depth = 3,
+            Depth = 4,
             Load = new NamedTypeSymbolLoadFlags()
             {
                Methods = true,
@@ -223,43 +223,43 @@ public sealed partial class SerializationGenerator
                Attributes = true
             }
          },
-         Methods =
+         Methods = new MethodTransformOptions
          {
-            Depth = 2,
+            Depth = 4,
             Load = new MethodSymbolLoadFlags()
             {
                Parameters = true
             }
          },
-         Properties =
+         Properties = new PropertyTransformOptions
          {
-            Depth = 2,
+            Depth = 4,
             Load = new PropertySymbolLoadFlags()
             {
                Type = true,
                Attributes = true
             }
          },
-         Fields =
+         Fields = new FieldTransformOptions
          {
-            Depth = 2,
+            Depth = 4,
             Load = new FieldSymbolLoadFlags()
             {
                Type = true,
                Attributes = true
             }
          },
-         Parameters =
+         Parameters = new ParameterTransformOptions
          {
-            Depth = 3,
+            Depth = 4,
             Load = new ParameterSymbolLoadFlags()
             {
                Type = true
             }
          },
-         Types =
+         Types = new TypeTransformOptions
          {
-            Depth = 3,
+            Depth = 4,
             Load = new TypeSymbolLoadFlags()
             {
                BaseType = true,
@@ -267,5 +267,7 @@ public sealed partial class SerializationGenerator
             }
          }
       };
+
+      return options;
    }
 }

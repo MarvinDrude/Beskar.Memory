@@ -6,7 +6,7 @@ namespace Beskar.Memory.Code.TypeIdGenerator.Generator.Models;
 /// <summary>
 /// IsUseConstructor if its a record constructor based type
 /// </summary>
-public sealed record SerializeSpec(
+public readonly record struct SerializeSpec(
    NamedTypeSymbolArchetype TypeArchetype,
    bool IsOpenGeneric,
    bool IsUseConstructor,

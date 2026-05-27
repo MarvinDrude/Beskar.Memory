@@ -1,4 +1,4 @@
-﻿using Beskar.Memory.Code.Models.Diagnostics;
+using Beskar.Memory.Code.Models.Diagnostics;
 using Beskar.Memory.Buffers;
 using Beskar.Memory.Writers;
 using Beskar.Memory.Flags;
@@ -14,6 +14,7 @@ namespace Beskar.Memory.Code.Diagnostics;
 public sealed class DiagnosticBuilder<T>(
    int diagnosticInitialCapacity = 16)
    : IDisposable
+   where T : new()
 {
    private readonly ArrayBuilder<DiagnosticSpec> _diagnostics = new(diagnosticInitialCapacity);
    private bool _isDisposed;
@@ -74,7 +75,7 @@ public sealed class DiagnosticBuilder<T>(
          throw new InvalidOperationException("Cannot build a disposed DiagnosticBuilder.");
 
       SequenceArray<DiagnosticSpec> diagnostics = [.. _diagnostics.WrittenSpan];
-      return new MaybeSpec<T>(false, default!, diagnostics);
+      return new MaybeSpec<T>(false, new T(), diagnostics);
    }
 
    /// <summary>

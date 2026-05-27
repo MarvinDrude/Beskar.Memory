@@ -12,7 +12,9 @@
     <File Path="README.md" />
     <File Path="SECURITY.md" />
   </Folder>
-  <Folder Name="/Benchmarks/" />
+  <Folder Name="/Benchmarks/">
+    <Project Path="Benchmarks/Beskar.Experiments/Beskar.Experiments.csproj" />
+  </Folder>
   <Folder Name="/Bundles/">
     <Project Path="Bundles/Beskar.Memory.Code.TypeIdGenerator/Beskar.Memory.Code.TypeIdGenerator.csproj" />
     <Project Path="Bundles/Beskar.Memory.Code.ObserveGenerator/Beskar.Memory.Code.ObserveGenerator.csproj" />
@@ -40,5 +42,6 @@
     <Project Path="Tests/Beskar.Memory.Code.PacketGenerator.Tests/Beskar.Memory.Code.PacketGenerator.Tests.csproj" />
     <Project Path="Tests/Beskar.Memory.Code.Tests/Beskar.Memory.Code.Tests.csproj" />
     <Project Path="Tests/Beskar.Memory.Tests.Utils/Beskar.Memory.Tests.Utils.csproj" />
+    <Project Path="Tests/Beskar.Memory.Serialization.Generator.Tests/Beskar.Memory.Serialization.Generator.Tests.csproj" />
   </Folder>
 </Solution>

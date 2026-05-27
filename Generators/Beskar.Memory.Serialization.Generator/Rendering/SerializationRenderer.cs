@@ -50,6 +50,7 @@ public sealed class SerializationRenderer(SourceProductionContext ctx)
       writer.WriteUsing("System.Buffers.Binary");
       writer.WriteUsing("System.Diagnostics.CodeAnalysis");
       writer.WriteUsing("System.Runtime.CompilerServices");
+      writer.WriteUsing("Beskar.Memory.Extensions");
       writer.WriteUsing("Beskar.Memory.Buffers");
       writer.WriteUsing("Beskar.Memory.Writers");
       writer.WriteUsing("Beskar.Memory.Serialization.Interfaces");
@@ -257,7 +258,7 @@ public sealed class SerializationRenderer(SourceProductionContext ctx)
 
             writer.WriteLine("if (tag == 0)");
             writer.OpenBody();
-            writer.WriteLine("value = default;");
+            writer.WriteLine("value = default!;");
             writer.WriteLine("return true;");
             writer.CloseBody();
             writer.WriteLine();
@@ -292,7 +293,7 @@ public sealed class SerializationRenderer(SourceProductionContext ctx)
 
             writer.WriteLine("if (hasValue == 0)");
             writer.OpenBody();
-            writer.WriteLine("value = default;");
+            writer.WriteLine("value = default!;");
             writer.WriteLine("return true;");
             writer.CloseBody();
             writer.WriteLine();

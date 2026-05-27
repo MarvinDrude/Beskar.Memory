@@ -6,8 +6,8 @@ namespace Beskar.Memory.Code.EnumGenerator.Generator;
 public sealed partial class EnumGenerator : IIncrementalGenerator
 {
    public const string GeneratorName = "EnumGenerator";
-   public const string GeneratorVersion = "1.5.1";
-   
+   public const string GeneratorVersion = "1.5.2";
+
    public void Initialize(IncrementalGeneratorInitializationContext context)
    {
       var assemblyNameProvider = context.CompilationProvider
@@ -21,13 +21,13 @@ public sealed partial class EnumGenerator : IIncrementalGenerator
             FastEnumAttributeFullName,
             predicate: static (_, _) => true,
             transform: Transform);
-      
+
       var combined = maybeSpecProvider
          .Combine(assemblyNameProvider);
-      
-      context.RegisterSourceOutput(combined, static (ctx, source) 
+
+      context.RegisterSourceOutput(combined, static (ctx, source)
          => Render(ctx, source.Right, source.Left));
-      
+
       context.RegisterPostInitializationOutput(static ctx =>
       {
          ctx.AddSource($"{GeneratorName}.g.cs", $"// Version {GeneratorVersion}");

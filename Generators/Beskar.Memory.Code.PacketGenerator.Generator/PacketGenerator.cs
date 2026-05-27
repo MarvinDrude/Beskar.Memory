@@ -8,8 +8,8 @@ namespace Beskar.Memory.Code.PacketGenerator.Generator;
 public sealed partial class PacketGenerator : IIncrementalGenerator
 {
    public const string GeneratorName = "PacketGenerator";
-   public const string GeneratorVersion = "1.5.1";
-   
+   public const string GeneratorVersion = "1.5.2";
+
    public void Initialize(IncrementalGeneratorInitializationContext context)
    {
       var assemblyNameProvider = context.CompilationProvider
@@ -18,13 +18,13 @@ public sealed partial class PacketGenerator : IIncrementalGenerator
             .Replace(".", string.Empty)
             .Replace("-", string.Empty)
             .Trim() ?? "UnknownAssembly");
-      
+
       var maybePacketSpecProvider = context.SyntaxProvider
          .ForAttributeWithMetadataName(
             PacketAttributeFullName,
             predicate: static (_, _) => true,
             transform: Transform);
-      
+
       var maybePacketRegistrySpecProvider = context.SyntaxProvider
          .ForAttributeWithMetadataName(
             PacketRegistryAttributeFullName,
@@ -35,7 +35,7 @@ public sealed partial class PacketGenerator : IIncrementalGenerator
             PacketRegistryGenericAttributeFullName,
             predicate: static (_, _) => true,
             transform: TransformRegistry);
-      
+
       var combinedProvider = maybePacketRegistrySpecProvider
          .Collect()
          .Combine(maybePacketRegistryGenericSpecProvider.Collect())
@@ -43,7 +43,7 @@ public sealed partial class PacketGenerator : IIncrementalGenerator
             var (nonGeneric, generic) = pair;
             return nonGeneric.Concat(generic);
          });
-      
+
       var packetCombined = maybePacketSpecProvider
          .Collect().Combine(assemblyNameProvider);
 
@@ -59,7 +59,7 @@ public sealed partial class PacketGenerator : IIncrementalGenerator
 
             var registryValue = registry.Value;
             var registryFullName = registryValue.NamedTypeArchetype.Symbol.FullName;
-            
+
             var relevantIndices = packets
                .Select((packet, index) => new { packet, index })
                .Where(x => x.packet.RegistryFullTypeNames.Array.Contains(registryFullName))
@@ -68,17 +68,17 @@ public sealed partial class PacketGenerator : IIncrementalGenerator
 
             var specs = new SequenceArray<int>(relevantIndices);
             var packetSpecs = new SequenceArray<PacketSpec>(packets);
-            
+
             return (registry, packetSpecs, specs);
          });
       var registryCombined = registryProvider.Combine(assemblyNameProvider);
-      
-      context.RegisterSourceOutput(packetCombined, static (ctx, source) 
+
+      context.RegisterSourceOutput(packetCombined, static (ctx, source)
          => RenderPackets(ctx, source.Right, source.Left));
-      
-      context.RegisterSourceOutput(registryCombined, static (ctx, source) 
+
+      context.RegisterSourceOutput(registryCombined, static (ctx, source)
          => RenderRegistry(ctx, source.Right, source.Left.registry, source.Left.packetSpecs, source.Left.specs));
-      
+
       context.RegisterPostInitializationOutput(static ctx =>
       {
          ctx.AddSource($"{GeneratorName}.g.cs", $"// Version {GeneratorVersion}");

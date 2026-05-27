@@ -6,7 +6,7 @@ namespace Beskar.Memory.Code.TypeIdGenerator.Generator;
 public sealed partial class SerializationGenerator : IIncrementalGenerator
 {
    public const string GeneratorName = "SerializationGenerator";
-   public const string GeneratorVersion = "1.5.1";
+   public const string GeneratorVersion = "1.5.2";
 
    public void Initialize(IncrementalGeneratorInitializationContext context)
    {
@@ -21,13 +21,13 @@ public sealed partial class SerializationGenerator : IIncrementalGenerator
             AttributeObjectFullName,
             predicate: static (_, _) => true,
             transform: Transform);
-      
+
       var combined = maybeSpecProvider
          .Combine(assemblyNameProvider);
-      
-      context.RegisterSourceOutput(combined, static (ctx, source) 
+
+      context.RegisterSourceOutput(combined, static (ctx, source)
          => Render(ctx, source.Right, source.Left));
-      
+
       context.RegisterPostInitializationOutput(static ctx =>
       {
          ctx.AddSource($"{GeneratorName}.g.cs", $"// Version {GeneratorVersion}");
