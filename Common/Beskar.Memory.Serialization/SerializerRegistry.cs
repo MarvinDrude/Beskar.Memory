@@ -42,8 +42,10 @@ public static class SerializerRegistry
       _resolvers.Add(new RegisteredSerializerResolver());
       _resolvers.Add(new OpenGenericSerializerResolver());
       _resolvers.Add(new ArraySerializerResolver());
+      _resolvers.Add(new EnumSerializerResolver());
 
       // 2. Register default open generic mappings
+      RegisterOpenGeneric(typeof(Lazy<>), typeof(LazySerializer<>));
       RegisterOpenGeneric(typeof(Nullable<>), typeof(NullableSerializer<>));
       RegisterOpenGeneric(typeof(List<>), typeof(ListSerializer<>));
       RegisterOpenGeneric(typeof(Dictionary<,>), typeof(DictionarySerializer<,>));

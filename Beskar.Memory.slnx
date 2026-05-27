@@ -32,6 +32,7 @@
   </Folder>
   <Folder Name="/Tests/">
     <Project Path="Tests/Beskar.Memory.Tests/Beskar.Memory.Tests.csproj" />
+    <Project Path="Tests/Beskar.Memory.Serialization.Tests/Beskar.Memory.Serialization.Tests.csproj" />
     <Project Path="Tests/Beskar.Memory.Code.TypeIdGenerator.Tests/Beskar.Memory.Code.TypeIdGenerator.Tests.csproj" />
     <Project Path="Tests/Beskar.Memory.Code.ObserveGenerator.Tests/Beskar.Memory.Code.ObserveGenerator.Tests.csproj" />
     <Project Path="Tests/Beskar.Memory.Code.EnumGenerator.Tests/Beskar.Memory.Code.EnumGenerator.Tests.csproj" />
