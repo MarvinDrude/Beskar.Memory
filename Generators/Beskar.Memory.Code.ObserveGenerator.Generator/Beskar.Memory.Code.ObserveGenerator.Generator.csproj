@@ -8,7 +8,6 @@
       <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
       <RootNamespace>Beskar.Memory.Code.ObserveGenerator.Generator</RootNamespace>
       <EnforceExtendedAnalyzerRules>true</EnforceExtendedAnalyzerRules>
-      <NoWarn>$(NoWarn);RS1041;RS1035;RS2008</NoWarn>
    </PropertyGroup>
 
    <ItemGroup>
@@ -21,7 +20,7 @@
       <Compile Include="..\..\Common\Beskar.Memory\**\*.cs"
                Exclude="..\..\Common\Beskar.Memory\obj\**;..\..\Common\Beskar.Memory\bin\**"
                Link="Beskar.Memory\%(RecursiveDir)%(Filename)%(Extension)" />
-               
+
       <!-- Inline the source files of Beskar.Memory.Code -->
       <Compile Include="..\..\Common\Beskar.Memory.Code\**\*.cs"
                Exclude="..\..\Common\Beskar.Memory.Code\obj\**;..\..\Common\Beskar.Memory.Code\bin\**"

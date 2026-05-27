@@ -12,7 +12,9 @@ public sealed class WorkPoolOptions
    /// Gets the maximum number of worker tasks running in parallel.
    /// Defaults to <see cref="Environment.ProcessorCount"/>.
    /// </summary>
+#pragma warning disable RS1035
    public int MaxDegreeOfParallelism { get; init; } = Environment.ProcessorCount;
+#pragma warning restore RS1035
 
    /// <summary>
    /// Gets the maximum capacity of the work queue.
@@ -25,7 +27,7 @@ public sealed class WorkPoolOptions
    /// Defaults to <see cref="BoundedChannelFullMode.Wait"/>.
    /// </summary>
    public BoundedChannelFullMode FullMode { get; init; } = BoundedChannelFullMode.Wait;
-   
+
    /// <summary>
    /// Gets a value indicating whether the channel has a single reader.
    /// Defaults to <see langword="false"/>.
