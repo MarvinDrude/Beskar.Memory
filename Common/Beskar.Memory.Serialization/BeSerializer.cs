@@ -148,6 +148,8 @@ public static class BeSerializer
       }
 
       using var spanOwner = new MemoryOwner<byte>(span.Length);
+      span.CopyTo(spanOwner);
+
       var sequence = new ReadOnlySequence<byte>(spanOwner.Memory);
 
       return Deserialize<T>(sequence);
@@ -225,6 +227,8 @@ public static class BeSerializer
       }
 
       using var spanOwner = new MemoryOwner<byte>(span.Length);
+      span.CopyTo(spanOwner);
+
       var sequence = new ReadOnlySequence<byte>(spanOwner.Memory);
 
       return TryDeserialize(sequence, out value);
