@@ -30,7 +30,7 @@ public delegate int CalculateByteLengthDelegate<T>(scoped in T value)
 /// </summary>
 public static class SerializerRegistry
 {
-   private static readonly List<ISerializerResolver> _resolvers = [];
+   private static volatile ISerializerResolver[] _resolvers;
    private static readonly ConcurrentDictionary<Type, Type> _explicitMappings = new();
    private static readonly ConcurrentDictionary<Type, Type> _openGenericMappings = new();
 
@@ -38,13 +38,16 @@ public static class SerializerRegistry
 
    static SerializerRegistry()
    {
-      // 1. Register default resolvers
-      _resolvers.Add(new RegisteredSerializerResolver());
-      _resolvers.Add(new OpenGenericSerializerResolver());
-      _resolvers.Add(new ArraySerializerResolver());
-      _resolvers.Add(new EnumSerializerResolver());
+      // Register default resolvers
+      _resolvers =
+      [
+         new RegisteredSerializerResolver(),
+         new OpenGenericSerializerResolver(),
+         new ArraySerializerResolver(),
+         new EnumSerializerResolver()
+      ];
 
-      // 2. Register default open generic mappings
+      // Register default open generic mappings
       RegisterOpenGeneric(typeof(Lazy<>), typeof(LazySerializer<>));
       RegisterOpenGeneric(typeof(Nullable<>), typeof(NullableSerializer<>));
       RegisterOpenGeneric(typeof(List<>), typeof(ListSerializer<>));
@@ -139,7 +142,13 @@ public static class SerializerRegistry
    {
       lock (_resolverLock)
       {
-         _resolvers.Add(resolver);
+         var current = _resolvers;
+         var newResolvers = new ISerializerResolver[current.Length + 1];
+
+         Array.Copy(current, newResolvers, current.Length);
+         newResolvers[current.Length] = resolver;
+
+         _resolvers = newResolvers;
       }
    }
 
@@ -150,7 +159,26 @@ public static class SerializerRegistry
    {
       lock (_resolverLock)
       {
-         _resolvers.Insert(index, resolver);
+         var current = _resolvers;
+         if (index < 0 || index > current.Length)
+         {
+            throw new ArgumentOutOfRangeException(nameof(index));
+         }
+
+         var newResolvers = new ISerializerResolver[current.Length + 1];
+         if (index > 0)
+         {
+            Array.Copy(current, 0, newResolvers, 0, index);
+         }
+
+         newResolvers[index] = resolver;
+
+         if (index < current.Length)
+         {
+            Array.Copy(current, index, newResolvers, index + 1, current.Length - index);
+         }
+
+         _resolvers = newResolvers;
       }
    }
 
@@ -176,17 +204,13 @@ public static class SerializerRegistry
    public static bool Resolve<T>()
       where T : allows ref struct
    {
-      List<ISerializerResolver> resolversCopy;
-      lock (_resolverLock)
-      {
-         resolversCopy = new List<ISerializerResolver>(_resolvers);
-      }
-
-      foreach (var resolver in resolversCopy)
+      // ReSharper disable once InconsistentlySynchronizedField
+      var resolvers = _resolvers;
+      for (var i = 0; i < resolvers.Length; i++)
       {
          try
          {
-            if (resolver.TryResolve<T>())
+            if (resolvers[i].TryResolve<T>())
             {
                return true;
             }

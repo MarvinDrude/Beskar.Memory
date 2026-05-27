@@ -39,8 +39,4 @@
       <ProjectReference Include="..\..\Common\Beskar.Memory\Beskar.Memory.csproj" />
    </ItemGroup>
 
-   <ItemGroup>
-     <Folder Include="Attributes\" />
-   </ItemGroup>
-
 </Project>
