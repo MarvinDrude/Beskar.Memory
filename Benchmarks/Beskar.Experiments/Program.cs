@@ -11,6 +11,9 @@ public partial class SimpleClass
    public int Id { get; set; }
 
    [BeskarOrder(1)]
+   public int Id2 { get; set; }
+
+   [BeskarOrder(2)]
    public string Name { get; set; } = string.Empty;
 }
 

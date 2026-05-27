@@ -29,10 +29,12 @@ public sealed class GeneratorTests
       var simpleClassTree = result.GeneratedSyntaxTrees.FirstOrDefault(t => t.FilePath.EndsWith("SimpleClass.g.cs"));
       Assert.NotNull(simpleClassTree);
       var simpleClassSource = simpleClassTree.ToString();
-      Assert.Contains("public sealed class SimpleClassSerializer : ISerializer<global::TestNamespace.SimpleClass>", simpleClassSource);
-      Assert.Contains("SerializerRegistry<int>.GetWrite()(ref writer, value.Id);", simpleClassSource);
+      Assert.Contains("public sealed class SimpleClassSerializer : ISerializer<global::TestNamespace.SimpleClass?>", simpleClassSource);
+      Assert.Contains("var writeint = SerializerRegistry<int>.GetWrite();", simpleClassSource);
+      Assert.Contains("bytesWritten += writeint(ref writer, value.Id);", simpleClassSource);
+      Assert.Contains("bytesWritten += writeint(ref writer, value.Id2);", simpleClassSource);
       Assert.Contains("SerializerRegistry<string>.GetWrite()(ref writer, value.Name);", simpleClassSource);
-      Assert.Contains("SerializerRegistry<global::TestNamespace.SimpleClass>.Register<SimpleClassSerializer>();", simpleClassSource);
+      Assert.Contains("SerializerRegistry<global::TestNamespace.SimpleClass?>.Register<SimpleClassSerializer>();", simpleClassSource);
 
       var simpleStructTree = result.GeneratedSyntaxTrees.FirstOrDefault(t => t.FilePath.EndsWith("SimpleStruct.g.cs"));
       Assert.NotNull(simpleStructTree);
@@ -47,11 +49,13 @@ public sealed class GeneratorTests
       Assert.Contains("SerializerRegistry<int>.GetWrite()(ref writer, value.Kept);", ignoredClassSource);
       Assert.DoesNotContain("value.Ignored", ignoredClassSource);
       Assert.DoesNotContain("value.IgnoredWithOrder", ignoredClassSource);
+      Assert.Contains("SerializerRegistry<global::TestNamespace.IgnoredMemberClass?>.Register<IgnoredMemberClassSerializer>();", ignoredClassSource);
 
       var recordTree = result.GeneratedSyntaxTrees.FirstOrDefault(t => t.FilePath.EndsWith("ImmutableRecord.g.cs"));
       Assert.NotNull(recordTree);
       var recordSource = recordTree.ToString();
       Assert.Contains("value = new global::TestNamespace.ImmutableRecord(member_Id, member_Data);", recordSource);
+      Assert.Contains("SerializerRegistry<global::TestNamespace.ImmutableRecord?>.Register<ImmutableRecordSerializer>();", recordSource);
 
       var unionTree = result.GeneratedSyntaxTrees.FirstOrDefault(t => t.FilePath.EndsWith("UnionBase.g.cs"));
       Assert.NotNull(unionTree);
@@ -59,11 +63,13 @@ public sealed class GeneratorTests
       Assert.Contains("if (value is global::TestNamespace.UnionChild child1)", unionSource);
       Assert.Contains("(1).WriteLittleEndian(ref writer);", unionSource);
       Assert.Contains("if (tag == 1)", unionSource);
+      Assert.Contains("SerializerRegistry<global::TestNamespace.UnionBase?>.Register<UnionBaseSerializer>();", unionSource);
 
       var nonPolyChildTree = result.GeneratedSyntaxTrees.FirstOrDefault(t => t.FilePath.EndsWith("NonPolyChild.g.cs"));
       Assert.NotNull(nonPolyChildTree);
       var nonPolyChildSource = nonPolyChildTree.ToString();
-      Assert.Contains("public sealed class NonPolyChildSerializer : ISerializer<global::TestNamespace.NonPolyChild>", nonPolyChildSource);
+      Assert.Contains("public sealed class NonPolyChildSerializer : ISerializer<global::TestNamespace.NonPolyChild?>", nonPolyChildSource);
       Assert.Contains("SerializerRegistry<int>.GetWrite()(ref writer, value.ChildValue);", nonPolyChildSource);
+      Assert.Contains("SerializerRegistry<global::TestNamespace.NonPolyChild?>.Register<NonPolyChildSerializer>();", nonPolyChildSource);
    }
 }
