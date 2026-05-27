@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
    <PropertyGroup>
       <TargetFramework>net10.0</TargetFramework>
@@ -6,6 +6,7 @@
       <Nullable>enable</Nullable>
       <IsPackable>true</IsPackable>
       <RootNamespace>Beskar.Memory.Serialization</RootNamespace>
+      <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
    </PropertyGroup>
 
    <PropertyGroup>
