@@ -5,6 +5,7 @@
 
    <ItemGroup>
      <ProjectReference Include="..\..\Common\Beskar.Memory\Beskar.Memory.csproj" />
+     <ProjectReference Include="..\..\Common\Beskar.Memory.Serialization\Beskar.Memory.Serialization.csproj" />
    </ItemGroup>
 
    <ItemGroup>
