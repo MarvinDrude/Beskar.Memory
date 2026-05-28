@@ -137,7 +137,6 @@ public sealed class SerializationRenderer(SourceProductionContext ctx)
        writer.WriteLineInterpolated($"public static int Write(ref BufferWriter<byte> writer, scoped in {target} value)");
        writer.OpenBody();
 
-       writer.WriteLine("var bytesWritten = 0;");
        if (!Spec.TypeArchetype.Type.IsValueType)
        {
           writer.WriteLine("if (value is null)");
@@ -163,6 +162,7 @@ public sealed class SerializationRenderer(SourceProductionContext ctx)
              return;
           }
 
+          writer.WriteLine("var bytesWritten = 0;");
           writer.WriteLine("ref var context = ref SerializationContext.Current;");
           writer.WriteLine("if (context.TryGetReferenceId(value, out int refId))");
           writer.OpenBody();
@@ -191,6 +191,8 @@ public sealed class SerializationRenderer(SourceProductionContext ctx)
              writer.CloseBody();
              return;
           }
+
+          writer.WriteLine("var bytesWritten = 0;");
        }
 
        if (Spec.ImplementsSerializationCallback)
@@ -523,57 +525,59 @@ public sealed class SerializationRenderer(SourceProductionContext ctx)
       writer.WriteLineInterpolated($"public static int CalculateByteLength(scoped in {target} value)");
       writer.OpenBody();
 
-      writer.WriteLine("var totalLength = 0;");
-      if (!Spec.TypeArchetype.Type.IsValueType)
-      {
-         writer.WriteLine("if (value is null)");
-         writer.OpenBody();
-         writer.WriteLine("return VarInteger.CalculateByteLength(0);");
-         writer.CloseBody();
-         writer.WriteLine();
+       if (!Spec.TypeArchetype.Type.IsValueType)
+       {
+          writer.WriteLine("if (value is null)");
+          writer.OpenBody();
+          writer.WriteLine("return VarInteger.CalculateByteLength(0);");
+          writer.CloseBody();
+          writer.WriteLine();
 
-         if (Spec.UnionSpecs.Array.Length > 0)
-         {
-            foreach (var union in Spec.UnionSpecs.Array)
-            {
-               var unionType = union.Type.Symbol.FullName;
-               writer.WriteLineInterpolated($"if (value is {unionType} child{union.Tag})");
-               writer.OpenBody();
-               writer.WriteLineInterpolated($"return VarInteger.CalculateByteLength({union.Tag}) + SerializerRegistry<{unionType}>.GetCalculateByteLength()(child{union.Tag});");
-               writer.CloseBody();
-            }
-            writer.WriteLine("throw new InvalidOperationException($\"Unknown union type: {value.GetType()}\");");
-            writer.CloseBody();
-            return;
-         }
+          if (Spec.UnionSpecs.Array.Length > 0)
+          {
+             foreach (var union in Spec.UnionSpecs.Array)
+             {
+                var unionType = union.Type.Symbol.FullName;
+                writer.WriteLineInterpolated($"if (value is {unionType} child{union.Tag})");
+                writer.OpenBody();
+                writer.WriteLineInterpolated($"return VarInteger.CalculateByteLength({union.Tag}) + SerializerRegistry<{unionType}>.GetCalculateByteLength()(child{union.Tag});");
+                writer.CloseBody();
+             }
+             writer.WriteLine("throw new InvalidOperationException($\"Unknown union type: {value.GetType()}\");");
+             writer.CloseBody();
+             return;
+          }
 
-         writer.WriteLine("ref var context = ref SerializationContext.Current;");
-         writer.WriteLine("if (context.TryGetReferenceId(value, out int refId))");
-         writer.OpenBody();
-         writer.WriteLine("return VarInteger.CalculateByteLength(-refId);");
-         writer.CloseBody();
-         writer.WriteLine();
+          writer.WriteLine("var totalLength = 0;");
+          writer.WriteLine("ref var context = ref SerializationContext.Current;");
+          writer.WriteLine("if (context.TryGetReferenceId(value, out int refId))");
+          writer.OpenBody();
+          writer.WriteLine("return VarInteger.CalculateByteLength(-refId);");
+          writer.CloseBody();
+          writer.WriteLine();
 
-         writer.WriteLine("int newId = context.Register(value);");
-         writer.WriteLine("totalLength = VarInteger.CalculateByteLength(newId);");
-      }
-      else
-      {
-         if (Spec.UnionSpecs.Array.Length > 0)
-         {
-            foreach (var union in Spec.UnionSpecs.Array)
-            {
-               var unionType = union.Type.Symbol.FullName;
-               writer.WriteLineInterpolated($"if (value is {unionType} child{union.Tag})");
-               writer.OpenBody();
-               writer.WriteLineInterpolated($"return VarInteger.CalculateByteLength({union.Tag}) + SerializerRegistry<{unionType}>.GetCalculateByteLength()(child{union.Tag});");
-               writer.CloseBody();
-            }
-            writer.WriteLine("throw new InvalidOperationException($\"Unknown union type: {value.GetType()}\");");
-            writer.CloseBody();
-            return;
-         }
-      }
+          writer.WriteLine("int newId = context.Register(value);");
+          writer.WriteLine("totalLength = VarInteger.CalculateByteLength(newId);");
+       }
+       else
+       {
+          if (Spec.UnionSpecs.Array.Length > 0)
+          {
+             foreach (var union in Spec.UnionSpecs.Array)
+             {
+                var unionType = union.Type.Symbol.FullName;
+                writer.WriteLineInterpolated($"if (value is {unionType} child{union.Tag})");
+                writer.OpenBody();
+                writer.WriteLineInterpolated($"return VarInteger.CalculateByteLength({union.Tag}) + SerializerRegistry<{unionType}>.GetCalculateByteLength()(child{union.Tag});");
+                writer.CloseBody();
+             }
+             writer.WriteLine("throw new InvalidOperationException($\"Unknown union type: {value.GetType()}\");");
+             writer.CloseBody();
+             return;
+          }
+
+          writer.WriteLine("var totalLength = 0;");
+       }
 
       if (Spec.MemberSpecs.Array.Length > 0)
       {
