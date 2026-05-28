@@ -1,6 +1,7 @@
 using System;
 using System.Buffers;
 using System.Diagnostics.CodeAnalysis;
+using System.Reflection;
 using Beskar.Memory.Writers;
 using Beskar.Memory.Serialization.Interfaces;
 using Beskar.Memory.Serialization;
@@ -227,6 +228,129 @@ public class BeSerializerTests
          current = current.Next;
       }
       Assert.Same(deserialized, current); // Cycles back to start!
+   }
+
+   [Fact]
+   public void TestSerializationContextDictionaryTransition()
+   {
+      var context = new SerializationContext();
+      try
+      {
+         var testObjects = new object[20];
+         for (var i = 0; i < 20; i++)
+         {
+            testObjects[i] = new object();
+         }
+
+         // TryGet on empty context should not fail
+         Assert.False(context.TryGetReferenceId(testObjects[0], out _));
+
+         // 2. Register up to 16 elements (should use arrays)
+         for (var i = 0; i < 16; i++)
+         {
+            var id = context.Register(testObjects[i]);
+            Assert.Equal(i + 1, id);
+         }
+
+         // Verify reflection-wise that we are using arrays and _dict is null
+         var dictField = typeof(SerializationContext).GetField("_dict", BindingFlags.NonPublic | BindingFlags.Instance);
+         var referencesField = typeof(SerializationContext).GetField("_references", BindingFlags.NonPublic | BindingFlags.Instance);
+         
+         Assert.NotNull(dictField);
+         Assert.NotNull(referencesField);
+
+         var dictValueBefore = dictField.GetValue(context);
+         var referencesValueBefore = referencesField.GetValue(context);
+
+         Assert.Null(dictValueBefore);
+         Assert.NotNull(referencesValueBefore);
+
+         // All 16 can be retrieved
+         for (var i = 0; i < 16; i++)
+         {
+            Assert.True(context.TryGetReferenceId(testObjects[i], out var refId));
+            Assert.Equal(i + 1, refId);
+         }
+
+         // 3. Register the 17th element (should trigger transition to dictionary)
+         var id17 = context.Register(testObjects[16]);
+         Assert.Equal(17, id17);
+
+         var dictValueAfter = dictField.GetValue(context);
+         var referencesValueAfter = referencesField.GetValue(context);
+
+         Assert.NotNull(dictValueAfter);
+         Assert.Null(referencesValueAfter); // Returned to pool and nulled!
+
+         // Verify that all 17 elements can still be retrieved perfectly
+         for (var i = 0; i < 17; i++)
+         {
+            Assert.True(context.TryGetReferenceId(testObjects[i], out var refId));
+            Assert.Equal(i + 1, refId);
+         }
+      }
+      finally
+      {
+         context.Dispose();
+      }
+   }
+
+   [Fact]
+   public void TestDeserializationContextDictionaryTransition()
+   {
+      var context = new DeserializationContext();
+      try
+      {
+         var testObjects = new object[20];
+         for (var i = 0; i < 20; i++)
+         {
+            testObjects[i] = new object();
+         }
+
+         // Register up to 16 elements
+         for (var i = 0; i < 16; i++)
+         {
+            context.Register(i + 1, testObjects[i]);
+         }
+
+         // Verify reflection-wise that we are using arrays and _dict is null
+         var dictField = typeof(DeserializationContext).GetField("_dict", BindingFlags.NonPublic | BindingFlags.Instance);
+         var referencesField = typeof(DeserializationContext).GetField("_references", BindingFlags.NonPublic | BindingFlags.Instance);
+
+         Assert.NotNull(dictField);
+         Assert.NotNull(referencesField);
+
+         var dictValueBefore = dictField.GetValue(context);
+         var referencesValueBefore = referencesField.GetValue(context);
+
+         Assert.Null(dictValueBefore);
+         Assert.NotNull(referencesValueBefore);
+
+         // All 16 can be retrieved
+         for (var i = 0; i < 16; i++)
+         {
+            Assert.Same(testObjects[i], context.GetByReferenceId(i + 1));
+         }
+
+         // Register the 17th element (should trigger transition)
+         context.Register(17, testObjects[16]);
+
+         var dictValueAfter = dictField.GetValue(context);
+         var referencesValueAfter = referencesField.GetValue(context);
+
+         Assert.NotNull(dictValueAfter);
+         Assert.Null(referencesValueAfter); // Returned to pool and nulled!
+
+         // Verify that all 17 elements can still be retrieved perfectly
+         for (var i = 0; i < 17; i++)
+         {
+            Assert.Same(testObjects[i], context.GetByReferenceId(i + 1));
+         }
+      }
+      finally
+      {
+         context.Dispose();
+      }
    }
 }
 
