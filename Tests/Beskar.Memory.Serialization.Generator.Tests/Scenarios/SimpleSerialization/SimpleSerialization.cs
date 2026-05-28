@@ -102,3 +102,13 @@ public class ClassWithRequiredMember
    [BeskarOrder(0)]
    public required int RequiredValue { get; set; }
 }
+
+[BeskarObject]
+public class CyclicNode
+{
+   [BeskarOrder(0)]
+   public required string Name { get; set; }
+
+   [BeskarOrder(1)]
+   public CyclicNode? Next { get; set; }
+}

@@ -26,15 +26,21 @@ public static class FieldSymbolArchetypeTransformer
 
       if (options.TryGetCached(fieldSymbol, out FieldSymbolArchetype cached))
       {
-         return cached;
+         var needsType = options.Fields.Load.Type && depth <= options.Fields.Depth;
+         var hasType = cached.Field.IsTypeLoaded;
+
+         if (!needsType || hasType)
+         {
+            return cached;
+         }
       }
-      
+
       var symbolSpec = SymbolSpecTransformer.Transform(fieldSymbol, depth, options);
       var fieldSpec = FieldSymbolSpecTransformer.Transform(fieldSymbol, depth, options);
-      
+
       var archetype = new FieldSymbolArchetype(symbolSpec, fieldSpec);
       options.AddToCache(fieldSymbol, archetype);
-      
+
       return archetype;
    }
 }

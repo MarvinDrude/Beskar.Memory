@@ -17,6 +17,9 @@ public partial class SimpleClass
 
    [BeskarOrder(2)]
    public string Name { get; set; } = string.Empty;
+
+   [BeskarOrder(3)]
+   public SimpleClass? Parent { get; set; }
 }
 
 [BeskarObject]

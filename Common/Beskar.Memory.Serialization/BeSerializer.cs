@@ -27,6 +27,10 @@ public static class BeSerializer
    {
       Span<byte> initialBuffer = stackalloc byte[256];
       var writer = new BufferWriter<byte>(initialBuffer);
+
+      var context = new SerializationContext();
+      SerializationContext.Current = context;
+
       try
       {
          SerializerRegistry<T>.GetWrite()(ref writer, value);
@@ -34,6 +38,9 @@ public static class BeSerializer
       }
       finally
       {
+         SerializationContext.Current = default;
+         context.Dispose();
+
          writer.Dispose();
       }
    }
@@ -49,6 +56,10 @@ public static class BeSerializer
    public static int Serialize<T>(scoped in T value, Span<byte> destination)
    {
       var writer = new BufferWriter<byte>(destination);
+
+      var context = new SerializationContext();
+
+      SerializationContext.Current = context;
       try
       {
          SerializerRegistry<T>.GetWrite()(ref writer, value);
@@ -56,6 +67,9 @@ public static class BeSerializer
       }
       finally
       {
+         SerializationContext.Current = default;
+         context.Dispose();
+
          writer.Dispose();
       }
    }
@@ -70,7 +84,18 @@ public static class BeSerializer
    [MethodImpl(MethodImplOptions.AggressiveInlining)]
    public static int Serialize<T>(scoped in T value, ref BufferWriter<byte> writer)
    {
-      return SerializerRegistry<T>.GetWrite()(ref writer, value);
+      var context = new SerializationContext();
+      SerializationContext.Current = context;
+
+      try
+      {
+         return SerializerRegistry<T>.GetWrite()(ref writer, value);
+      }
+      finally
+      {
+         SerializationContext.Current = default;
+         context.Dispose();
+      }
    }
 
    /// <summary>
@@ -100,11 +125,23 @@ public static class BeSerializer
    public static T Deserialize<T>(ReadOnlySequence<byte> sequence)
    {
       var reader = new SequenceReader<byte>(sequence);
-      if (!SerializerRegistry<T>.GetTryRead()(ref reader, out var value))
+
+      var context = new DeserializationContext();
+      DeserializationContext.Current = context;
+
+      try
       {
-         throw new InvalidOperationException($"Failed to deserialize type {typeof(T)} from sequence.");
+         if (!SerializerRegistry<T>.GetTryRead()(ref reader, out var value))
+         {
+            throw new InvalidOperationException($"Failed to deserialize type {typeof(T)} from sequence.");
+         }
+         return value;
       }
-      return value;
+      finally
+      {
+         DeserializationContext.Current = default;
+         context.Dispose();
+      }
    }
 
    /// <summary>
@@ -183,7 +220,19 @@ public static class BeSerializer
    public static bool TryDeserialize<T>(ReadOnlySequence<byte> sequence, [MaybeNullWhen(false)] out T value)
    {
       var reader = new SequenceReader<byte>(sequence);
-      return SerializerRegistry<T>.GetTryRead()(ref reader, out value);
+
+      var context = new DeserializationContext();
+      DeserializationContext.Current = context;
+
+      try
+      {
+         return SerializerRegistry<T>.GetTryRead()(ref reader, out value);
+      }
+      finally
+      {
+         DeserializationContext.Current = default;
+         context.Dispose();
+      }
    }
 
    /// <summary>

@@ -1,4 +1,4 @@
-﻿using Beskar.Memory.Code.Interfaces.Specs;
+using Beskar.Memory.Code.Interfaces.Specs;
 using Beskar.Memory.Code.Models.Symbols.Archetypes;
 using Beskar.Memory.Flags;
 using Beskar.Memory.Collections;
@@ -19,6 +19,8 @@ public sealed record PropertySymbolSpec
    
    private PropertySymbolLoadFlags _loadedFlags;
    private ref PropertySymbolLoadFlags LoadedFlags => ref _loadedFlags;
+
+   public bool IsTypeLoaded => _loadedFlags.Type;
    
    /// <summary>
    /// Gets or sets a value indicating whether the property has a getter accessor.

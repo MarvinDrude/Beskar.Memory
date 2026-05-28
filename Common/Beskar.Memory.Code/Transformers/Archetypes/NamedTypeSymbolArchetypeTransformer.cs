@@ -23,19 +23,25 @@ public static class NamedTypeSymbolArchetypeTransformer
       ArchetypeTransformOptions? options = null)
    {
       options ??= new ArchetypeTransformOptions();
-      
+
       if (options.TryGetCached(namedTypeSymbol, out NamedTypeSymbolArchetype cached))
       {
-         return cached;
+         var needsProperties = options.NamedTypes.Load.Properties && depth <= options.NamedTypes.Depth;
+         var hasProperties = cached.NamedType.ArePropertiesLoaded;
+
+         if (!needsProperties || hasProperties)
+         {
+            return cached;
+         }
       }
-      
+
       var symbolSpec = SymbolSpecTransformer.Transform(namedTypeSymbol, depth, options);
       var typeSpec = TypeSymbolSpecTransformer.Transform(namedTypeSymbol, depth, options);
       var namedSpec = NamedTypeSymbolSpecTransformer.Transform(namedTypeSymbol, depth, options);
-      
+
       var archetype = new NamedTypeSymbolArchetype(symbolSpec, typeSpec, namedSpec);
       options.AddToCache(namedTypeSymbol, archetype);
-      
+
       return archetype;
    }
 }

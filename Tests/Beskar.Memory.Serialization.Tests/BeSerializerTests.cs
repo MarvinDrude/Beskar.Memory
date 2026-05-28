@@ -1,6 +1,10 @@
 using System;
 using System.Buffers;
+using System.Diagnostics.CodeAnalysis;
 using Beskar.Memory.Writers;
+using Beskar.Memory.Serialization.Interfaces;
+using Beskar.Memory.Serialization;
+using Beskar.Memory.Serialization.Serializers;
 using Xunit;
 
 namespace Beskar.Memory.Serialization.Tests;
@@ -163,5 +167,123 @@ public class BeSerializerTests
       Assert.True(success);
       Assert.Equal(TestValue, value);
       Assert.Equal(2, reader.Consumed);
+   }
+
+   [Fact]
+   public void TestCyclicReference()
+   {
+      SerializerRegistry<CyclicNode>.Register<CyclicNodeSerializer>();
+      SerializerRegistry<CyclicNode?>.Register<CyclicNodeSerializer>();
+
+      var node1 = new CyclicNode { Name = "Node 1" };
+      var node2 = new CyclicNode { Name = "Node 2" };
+      node1.Next = node2;
+      node2.Next = node1; // Cycle!
+
+      var bytes = BeSerializer.Serialize(node1);
+      Assert.NotNull(bytes);
+
+      var deserialized = BeSerializer.Deserialize<CyclicNode>(bytes);
+      Assert.NotNull(deserialized);
+      Assert.Equal("Node 1", deserialized.Name);
+      Assert.NotNull(deserialized.Next);
+      Assert.Equal("Node 2", deserialized.Next.Name);
+      Assert.Same(deserialized, deserialized.Next.Next); // Cycle is preserved!
+   }
+}
+
+public class CyclicNode
+{
+   public required string Name { get; set; }
+   public CyclicNode? Next { get; set; }
+}
+
+public sealed class CyclicNodeSerializer : ISerializer<CyclicNode>, ISerializer<CyclicNode?>
+{
+   public static int Write(ref BufferWriter<byte> writer, scoped in CyclicNode? value)
+   {
+      var bytesWritten = 0;
+      if (value is null)
+      {
+         return VarInteger.Write(ref writer, 0);
+      }
+
+      ref var context = ref SerializationContext.Current;
+      if (context.TryGetReferenceId(value, out int refId))
+      {
+         return VarInteger.Write(ref writer, -refId);
+      }
+
+      int newId = context.Register(value);
+      bytesWritten = VarInteger.Write(ref writer, newId);
+
+      bytesWritten += SerializerRegistry<string>.GetWrite()(ref writer, value.Name);
+      bytesWritten += SerializerRegistry<CyclicNode?>.GetWrite()(ref writer, value.Next);
+
+      return bytesWritten;
+   }
+
+   public static bool TryRead(ref SequenceReader<byte> reader, [MaybeNullWhen(false)] out CyclicNode? value)
+   {
+      if (!VarInteger.TryRead(ref reader, out int refTag))
+      {
+         value = default;
+         return false;
+      }
+
+      if (refTag == 0)
+      {
+         value = default;
+         return true;
+      }
+
+      ref var context = ref DeserializationContext.Current;
+      if (refTag < 0)
+      {
+         value = (CyclicNode)context.GetByReferenceId(-refTag);
+         return true;
+      }
+
+      value = new CyclicNode { Name = null! };
+      context.Register(refTag, value);
+
+      if (!SerializerRegistry<string>.GetTryRead()(ref reader, out var member_Name))
+      {
+         value = default;
+         return false;
+      }
+      value.Name = member_Name;
+
+      if (!SerializerRegistry<CyclicNode?>.GetTryRead()(ref reader, out var member_Next))
+      {
+         value = default;
+         return false;
+      }
+      value.Next = member_Next;
+
+      return true;
+   }
+
+   public static int CalculateByteLength(scoped in CyclicNode? value)
+   {
+      var totalLength = 0;
+      if (value is null)
+      {
+         return VarInteger.CalculateByteLength(0);
+      }
+
+      ref var context = ref SerializationContext.Current;
+      if (context.TryGetReferenceId(value, out int refId))
+      {
+         return VarInteger.CalculateByteLength(-refId);
+      }
+
+      int newId = context.Register(value);
+      totalLength = VarInteger.CalculateByteLength(newId);
+
+      totalLength += SerializerRegistry<string>.GetCalculateByteLength()(value.Name);
+      totalLength += SerializerRegistry<CyclicNode?>.GetCalculateByteLength()(value.Next);
+
+      return totalLength;
    }
 }

@@ -137,19 +137,12 @@ public sealed class SerializationRenderer(SourceProductionContext ctx)
        writer.WriteLineInterpolated($"public static int Write(ref BufferWriter<byte> writer, scoped in {target} value)");
        writer.OpenBody();
 
+       writer.WriteLine("var bytesWritten = 0;");
        if (!Spec.TypeArchetype.Type.IsValueType)
        {
           writer.WriteLine("if (value is null)");
           writer.OpenBody();
-          if (Spec.UnionSpecs.Array.Length > 0)
-          {
-             writer.WriteLine("return VarInteger.Write(ref writer, 0);");
-          }
-          else
-          {
-             writer.WriteLine("writer.Add((byte)0);");
-             writer.WriteLine("return 1;");
-          }
+          writer.WriteLine("return VarInteger.Write(ref writer, 0);");
           writer.CloseBody();
           writer.WriteLine();
 
@@ -161,18 +154,24 @@ public sealed class SerializationRenderer(SourceProductionContext ctx)
                 var unionTypeNullable = union.Type.Type.IsValueType ? unionType : $"{unionType}?";
                 writer.WriteLineInterpolated($"if (value is {unionType} child{union.Tag})");
                 writer.OpenBody();
-                writer.WriteLineInterpolated($"var bytesWritten = VarInteger.Write(ref writer, {union.Tag});");
-                writer.WriteLineInterpolated($"return bytesWritten + SerializerRegistry<{unionTypeNullable}>.GetWrite()(ref writer, child{union.Tag});");
+                writer.WriteLineInterpolated($"var bytesWrittenUnion = VarInteger.Write(ref writer, {union.Tag});");
+                writer.WriteLineInterpolated($"return bytesWrittenUnion + SerializerRegistry<{unionTypeNullable}>.GetWrite()(ref writer, child{union.Tag});");
                 writer.CloseBody();
              }
              writer.WriteLine("throw new InvalidOperationException($\"Unknown union type: {value.GetType()}\");");
              writer.CloseBody();
              return;
           }
-          else
-          {
-             writer.WriteLine("writer.Add((byte)1);");
-          }
+
+          writer.WriteLine("ref var context = ref SerializationContext.Current;");
+          writer.WriteLine("if (context.TryGetReferenceId(value, out int refId))");
+          writer.OpenBody();
+          writer.WriteLine("return VarInteger.Write(ref writer, -refId);");
+          writer.CloseBody();
+          writer.WriteLine();
+
+          writer.WriteLine("int newId = context.Register(value);");
+          writer.WriteLine("bytesWritten = VarInteger.Write(ref writer, newId);");
        }
        else
        {
@@ -229,7 +228,7 @@ public sealed class SerializationRenderer(SourceProductionContext ctx)
              writer.WriteLine();
           }
 
-          writer.WriteLine("var bytesWritten = 0;");
+
           for (var i = 0; i < Spec.MemberSpecs.Array.Length; i++)
           {
              var member = Spec.MemberSpecs.Array[i];
@@ -253,18 +252,11 @@ public sealed class SerializationRenderer(SourceProductionContext ctx)
              }
           }
 
-          if (!Spec.TypeArchetype.Type.IsValueType)
-          {
-             writer.WriteLine("return bytesWritten + 1;");
-          }
-          else
-          {
-             writer.WriteLine("return bytesWritten;");
-          }
+          writer.WriteLine("return bytesWritten;");
        }
        else
        {
-          writer.WriteLine(!Spec.TypeArchetype.Type.IsValueType ? "return 1;" : "return 0;");
+          writer.WriteLine("return bytesWritten;");
        }
 
        writer.CloseBody();
@@ -279,26 +271,26 @@ public sealed class SerializationRenderer(SourceProductionContext ctx)
 
       if (!Spec.TypeArchetype.Type.IsValueType)
       {
+         writer.WriteLine("if (!VarInteger.TryRead(ref reader, out int refTag))");
+         writer.OpenBody();
+         writer.WriteLine("value = default;");
+         writer.WriteLine("return false;");
+         writer.CloseBody();
+         writer.WriteLine();
+
+         writer.WriteLine("if (refTag == 0)");
+         writer.OpenBody();
+         writer.WriteLine("value = default;");
+         writer.WriteLine("return true;");
+         writer.CloseBody();
+         writer.WriteLine();
+
          if (Spec.UnionSpecs.Array.Length > 0)
          {
-            writer.WriteLine("if (!VarInteger.TryRead(ref reader, out int tag))");
-            writer.OpenBody();
-            writer.WriteLine("value = default;");
-            writer.WriteLine("return false;");
-            writer.CloseBody();
-            writer.WriteLine();
-
-            writer.WriteLine("if (tag == 0)");
-            writer.OpenBody();
-            writer.WriteLine("value = default;");
-            writer.WriteLine("return true;");
-            writer.CloseBody();
-            writer.WriteLine();
-
             foreach (var union in Spec.UnionSpecs.Array)
             {
                var unionType = union.Type.Symbol.FullName;
-               writer.WriteLineInterpolated($"if (tag == {union.Tag})");
+               writer.WriteLineInterpolated($"if (refTag == {union.Tag})");
                writer.OpenBody();
                writer.WriteLineInterpolated($"if (!SerializerRegistry<{unionType}>.GetTryRead()(ref reader, out var child))");
                writer.OpenBody();
@@ -310,26 +302,19 @@ public sealed class SerializationRenderer(SourceProductionContext ctx)
                writer.CloseBody();
             }
 
-            writer.WriteLine("throw new InvalidOperationException($\"Unknown union tag: {tag}\");");
+            writer.WriteLine("throw new InvalidOperationException($\"Unknown union tag: {refTag}\");");
             writer.CloseBody();
             return;
          }
-         else
-         {
-            writer.WriteLine("if (!reader.TryRead(out byte hasValue))");
-            writer.OpenBody();
-            writer.WriteLine("value = default;");
-            writer.WriteLine("return false;");
-            writer.CloseBody();
-            writer.WriteLine();
 
-            writer.WriteLine("if (hasValue == 0)");
-            writer.OpenBody();
-            writer.WriteLine("value = default;");
-            writer.WriteLine("return true;");
-            writer.CloseBody();
-            writer.WriteLine();
-         }
+         writer.WriteLine("ref var context = ref DeserializationContext.Current;");
+         writer.WriteLine("if (refTag < 0)");
+         writer.OpenBody();
+         var instantiationTarget = target.EndsWith("?") ? target.Substring(0, target.Length - 1) : target;
+         writer.WriteLineInterpolated($"value = ({instantiationTarget})context.GetByReferenceId(-refTag);");
+         writer.WriteLine("return true;");
+         writer.CloseBody();
+         writer.WriteLine();
       }
       else
       {
@@ -361,6 +346,29 @@ public sealed class SerializationRenderer(SourceProductionContext ctx)
             writer.CloseBody();
             return;
          }
+      }
+
+      if (!Spec.TypeArchetype.Type.IsValueType && !Spec.IsUseConstructor)
+      {
+         var instantiationTarget = target.EndsWith("?") ? target.Substring(0, target.Length - 1) : target;
+         if (Spec.MemberSpecs.Array.Length > 0)
+         {
+            writer.WriteLineInterpolated($"value = new {instantiationTarget}");
+            writer.OpenBody();
+            for (var i = 0; i < Spec.MemberSpecs.Array.Length; i++)
+            {
+               var m = Spec.MemberSpecs.Array[i];
+               var comma = i < Spec.MemberSpecs.Array.Length - 1 ? "," : "";
+               writer.WriteLineInterpolated($"{m.Name} = default!{comma}");
+            }
+            writer.CloseBodySemicolon();
+         }
+         else
+         {
+            writer.WriteLineInterpolated($"value = new {instantiationTarget}();");
+         }
+         writer.WriteLine("context.Register(refTag, value);");
+         writer.WriteLine();
       }
 
       // Count references to each member type (only those using default registry serializers)
@@ -460,25 +468,40 @@ public sealed class SerializationRenderer(SourceProductionContext ctx)
          {
             writer.WriteLineInterpolated($"value = new {instantiationTarget}({string.Join(", ", paramList)});");
          }
+
+         if (!Spec.TypeArchetype.Type.IsValueType)
+         {
+            writer.WriteLine("context.Register(refTag, value);");
+         }
       }
       else
       {
-         var instantiationTarget = target.EndsWith("?") ? target.Substring(0, target.Length - 1) : target;
-         if (Spec.MemberSpecs.Array.Length > 0)
+         if (Spec.TypeArchetype.Type.IsValueType)
          {
-            writer.WriteLineInterpolated($"value = new {instantiationTarget}");
-            writer.OpenBody();
-            for (var i = 0; i < Spec.MemberSpecs.Array.Length; i++)
+            var instantiationTarget = target.EndsWith("?") ? target.Substring(0, target.Length - 1) : target;
+            if (Spec.MemberSpecs.Array.Length > 0)
             {
-               var m = Spec.MemberSpecs.Array[i];
-               var comma = i < Spec.MemberSpecs.Array.Length - 1 ? "," : "";
-               writer.WriteLineInterpolated($"{m.Name} = member_{m.Name}{comma}");
+               writer.WriteLineInterpolated($"value = new {instantiationTarget}");
+               writer.OpenBody();
+               for (var i = 0; i < Spec.MemberSpecs.Array.Length; i++)
+               {
+                  var m = Spec.MemberSpecs.Array[i];
+                  var comma = i < Spec.MemberSpecs.Array.Length - 1 ? "," : "";
+                  writer.WriteLineInterpolated($"{m.Name} = member_{m.Name}{comma}");
+               }
+               writer.CloseBodySemicolon();
             }
-            writer.CloseBodySemicolon();
+            else
+            {
+               writer.WriteLineInterpolated($"value = new {instantiationTarget}();");
+            }
          }
          else
          {
-            writer.WriteLineInterpolated($"value = new {instantiationTarget}();");
+            foreach (var m in Spec.MemberSpecs.Array)
+            {
+               writer.WriteLineInterpolated($"value.{m.Name} = member_{m.Name};");
+            }
          }
       }
 
@@ -500,18 +523,12 @@ public sealed class SerializationRenderer(SourceProductionContext ctx)
       writer.WriteLineInterpolated($"public static int CalculateByteLength(scoped in {target} value)");
       writer.OpenBody();
 
+      writer.WriteLine("var totalLength = 0;");
       if (!Spec.TypeArchetype.Type.IsValueType)
       {
          writer.WriteLine("if (value is null)");
          writer.OpenBody();
-         if (Spec.UnionSpecs.Array.Length > 0)
-         {
-            writer.WriteLine("return VarInteger.CalculateByteLength(0);");
-         }
-         else
-         {
-            writer.WriteLine("return 1;");
-         }
+         writer.WriteLine("return VarInteger.CalculateByteLength(0);");
          writer.CloseBody();
          writer.WriteLine();
 
@@ -529,6 +546,16 @@ public sealed class SerializationRenderer(SourceProductionContext ctx)
             writer.CloseBody();
             return;
          }
+
+         writer.WriteLine("ref var context = ref SerializationContext.Current;");
+         writer.WriteLine("if (context.TryGetReferenceId(value, out int refId))");
+         writer.OpenBody();
+         writer.WriteLine("return VarInteger.CalculateByteLength(-refId);");
+         writer.CloseBody();
+         writer.WriteLine();
+
+         writer.WriteLine("int newId = context.Register(value);");
+         writer.WriteLine("totalLength = VarInteger.CalculateByteLength(newId);");
       }
       else
       {
@@ -576,7 +603,11 @@ public sealed class SerializationRenderer(SourceProductionContext ctx)
             writer.WriteLine();
          }
 
-         writer.WriteLine("var totalLength = 0;");
+         if (Spec.TypeArchetype.Type.IsValueType)
+         {
+            writer.WriteLine("totalLength = 0;");
+         }
+
          for (var i = 0; i < Spec.MemberSpecs.Array.Length; i++)
          {
             var member = Spec.MemberSpecs.Array[i];
@@ -600,18 +631,11 @@ public sealed class SerializationRenderer(SourceProductionContext ctx)
             }
          }
 
-         if (!Spec.TypeArchetype.Type.IsValueType)
-         {
-            writer.WriteLine("return totalLength + 1;");
-         }
-         else
-         {
-            writer.WriteLine("return totalLength;");
-         }
+         writer.WriteLine("return totalLength;");
       }
       else
       {
-         writer.WriteLine(!Spec.TypeArchetype.Type.IsValueType ? "return 1;" : "return 0;");
+         writer.WriteLine("return totalLength;");
       }
 
       writer.CloseBody();

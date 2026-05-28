@@ -1,4 +1,4 @@
-﻿using System.Diagnostics;
+using System.Diagnostics;
 using Beskar.Memory.Code.Interfaces.Specs;
 using Beskar.Memory.Code.Models.Symbols.Archetypes;
 using Beskar.Memory.Flags;
@@ -21,6 +21,8 @@ public sealed record NamedTypeSymbolSpec
    
    private NamedTypeSymbolLoadFlags _loadedFlags;
    private ref NamedTypeSymbolLoadFlags LoadedFlags => ref _loadedFlags;
+
+   public bool ArePropertiesLoaded => _loadedFlags.Properties;
    
    /// <summary>
    /// Gets or sets a value indicating whether the type is file-local.

@@ -1,4 +1,4 @@
-﻿using System.Diagnostics;
+using System.Diagnostics;
 using Beskar.Memory.Code.Interfaces.Specs;
 using Beskar.Memory.Code.Models.Symbols.Archetypes;
 using Beskar.Memory.Flags;
@@ -21,6 +21,8 @@ public sealed record FieldSymbolSpec
    
    private FieldSymbolLoadFlags _loadedFlags;
    private ref FieldSymbolLoadFlags LoadedFlags => ref _loadedFlags;
+
+   public bool IsTypeLoaded => _loadedFlags.Type;
    
    /// <summary>
    /// Gets or sets a value indicating whether the field has a constant value.

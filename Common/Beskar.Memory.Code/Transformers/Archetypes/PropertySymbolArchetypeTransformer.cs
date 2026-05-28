@@ -23,18 +23,24 @@ public static class PropertySymbolArchetypeTransformer
       ArchetypeTransformOptions? options = null)
    {
       options ??= new ArchetypeTransformOptions();
-      
+
       if (options.TryGetCached(propertySymbol, out PropertySymbolArchetype cached))
       {
-         return cached;
+         var needsType = options.Properties.Load.Type && depth <= options.Properties.Depth;
+         var hasType = cached.Property.IsTypeLoaded;
+
+         if (!needsType || hasType)
+         {
+            return cached;
+         }
       }
-      
+
       var symbolSpec = SymbolSpecTransformer.Transform(propertySymbol, depth, options);
       var propertySpec = PropertySymbolSpecTransformer.Transform(propertySymbol, depth, options);
-      
+
       var archetype = new PropertySymbolArchetype(symbolSpec, propertySpec);
       options.AddToCache(propertySymbol, archetype);
-      
+
       return archetype;
    }
 }

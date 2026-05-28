@@ -62,7 +62,7 @@ public sealed class GeneratorTests
       var unionSource = unionTree.ToString();
       Assert.Contains("if (value is global::TestNamespace.UnionChild child1)", unionSource);
       Assert.Contains("VarInteger.Write(ref writer, 1);", unionSource);
-      Assert.Contains("if (tag == 1)", unionSource);
+      Assert.Contains("if (refTag == 1)", unionSource);
       Assert.Contains("SerializerRegistry<global::TestNamespace.UnionBase?>.Register<UnionBaseSerializer>();", unionSource);
 
       var nonPolyChildTree = result.GeneratedSyntaxTrees.FirstOrDefault(t => t.FilePath.EndsWith("NonPolyChild.g.cs"));
@@ -95,5 +95,15 @@ public sealed class GeneratorTests
       var classWithRequiredMemberSource = classWithRequiredMemberTree.ToString();
       Assert.Contains("value = new global::TestNamespace.ClassWithRequiredMember", classWithRequiredMemberSource);
       Assert.Contains("RequiredValue = member_RequiredValue", classWithRequiredMemberSource);
+
+      var cyclicNodeTree = result.GeneratedSyntaxTrees.FirstOrDefault(t => t.FilePath.EndsWith("CyclicNode.g.cs"));
+      Assert.NotNull(cyclicNodeTree);
+      var cyclicNodeSource = cyclicNodeTree.ToString();
+      Assert.Contains("value = new global::TestNamespace.CyclicNode", cyclicNodeSource);
+      Assert.Contains("Name = default!", cyclicNodeSource);
+      Assert.Contains("Next = default!", cyclicNodeSource);
+      Assert.Contains("context.Register(refTag, value);", cyclicNodeSource);
+      Assert.Contains("value.Name = member_Name;", cyclicNodeSource);
+      Assert.Contains("value.Next = member_Next;", cyclicNodeSource);
    }
 }
