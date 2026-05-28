@@ -36,25 +36,6 @@ public sealed partial class SerializationGenerator
       ct.ThrowIfCancellationRequested();
       using var builder = DiagnosticBuilder<SerializeSpec>.Create(8);
 
-      var syntaxReferences = symbol.DeclaringSyntaxReferences;
-      var isPartial = false;
-
-      foreach (var r in syntaxReferences)
-      {
-         var node = r.GetSyntax(ct);
-
-         if (node is not Microsoft.CodeAnalysis.CSharp.Syntax.TypeDeclarationSyntax typeDecl) continue;
-         if (!typeDecl.Modifiers.Any(Microsoft.CodeAnalysis.CSharp.SyntaxKind.PartialKeyword)) continue;
-
-         isPartial = true;
-         break;
-      }
-
-      if (!isPartial)
-      {
-         return builder.Add(InvalidTargetDiagnosticId).Build();
-      }
-
       var namedType = symbol.CreateNamedArchetype(CreateTransformOptions());
       ct.ThrowIfCancellationRequested();
 
@@ -89,12 +70,14 @@ public sealed partial class SerializationGenerator
          }
 
          bool isProperty;
-         if (memberSymbol is IPropertySymbol)
+         if (memberSymbol is IPropertySymbol propertySymbol)
          {
+            if (propertySymbol.IsReadOnly) continue;
             isProperty = true;
          }
-         else if (memberSymbol is IFieldSymbol)
+         else if (memberSymbol is IFieldSymbol fieldSymbol)
          {
+            if (fieldSymbol.IsReadOnly) continue;
             isProperty = false;
          }
          else
@@ -210,6 +193,7 @@ public sealed partial class SerializationGenerator
    {
       var options = new ArchetypeTransformOptions
       {
+         TypeParameters = TypeParameterTransformOptions.Full,
          NamedTypes = new NamedTypeTransformOptions
          {
             Depth = 4,

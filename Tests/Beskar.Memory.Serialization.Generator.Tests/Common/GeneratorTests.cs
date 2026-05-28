@@ -71,5 +71,23 @@ public sealed class GeneratorTests
       Assert.Contains("public sealed class NonPolyChildSerializer : ISerializer<global::TestNamespace.NonPolyChild?>", nonPolyChildSource);
       Assert.Contains("SerializerRegistry<int>.GetWrite()(ref writer, value.ChildValue);", nonPolyChildSource);
       Assert.Contains("SerializerRegistry<global::TestNamespace.NonPolyChild?>.Register<NonPolyChildSerializer>();", nonPolyChildSource);
+
+      var nonPartialClassTree = result.GeneratedSyntaxTrees.FirstOrDefault(t => t.FilePath.EndsWith("NonPartialClass.g.cs"));
+      Assert.NotNull(nonPartialClassTree);
+      var nonPartialClassSource = nonPartialClassTree.ToString();
+      Assert.Contains("public sealed class NonPartialClassSerializer : ISerializer<global::TestNamespace.NonPartialClass?>", nonPartialClassSource);
+
+      var typeWithReadonlyMembersTree = result.GeneratedSyntaxTrees.FirstOrDefault(t => t.FilePath.EndsWith("TypeWithReadonlyMembers.g.cs"));
+      Assert.NotNull(typeWithReadonlyMembersTree);
+      var typeWithReadonlyMembersSource = typeWithReadonlyMembersTree.ToString();
+      Assert.DoesNotContain("ReadonlyField", typeWithReadonlyMembersSource);
+      Assert.DoesNotContain("ReadonlyProp", typeWithReadonlyMembersSource);
+      Assert.Contains("SerializerRegistry<int>.GetWrite()(ref writer, value.Value);", typeWithReadonlyMembersSource);
+
+      var genericPacketTree = result.GeneratedSyntaxTrees.FirstOrDefault(t => t.FilePath.EndsWith("GenericPacketWithConstraints.g.cs"));
+      Assert.NotNull(genericPacketTree);
+      var genericPacketSource = genericPacketTree.ToString();
+      Assert.Contains("public sealed class GenericPacketWithConstraintsSerializer<TPacket> : ISerializer<global::TestNamespace.GenericPacketWithConstraints<TPacket>>", genericPacketSource);
+      Assert.Contains("where TPacket : struct", genericPacketSource);
    }
 }

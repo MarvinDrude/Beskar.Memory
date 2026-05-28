@@ -80,11 +80,6 @@ public sealed class SerializationRenderer(SourceProductionContext ctx)
    {
       var symbol = Spec.TypeArchetype.Symbol;
       var baseName = symbol.FullName;
-      if (Spec.IsOpenGeneric)
-      {
-         var typeParams = string.Join(", ", Spec.TypeArchetype.NamedType.TypeParameters.Array.Select(x => x.Symbol.Name));
-         baseName = $"{symbol.FullName}<{typeParams}>";
-      }
       return Spec.TypeArchetype.Type.IsValueType ? baseName : $"{baseName}?";
    }
 
@@ -628,6 +623,11 @@ public sealed class SerializationRenderer(SourceProductionContext ctx)
    private string GetOpenGenericTypeSyntax(string baseName, int arity)
    {
       if (arity == 0) return $"typeof({baseName})";
+      var index = baseName.IndexOf('<');
+      if (index >= 0)
+      {
+         baseName = baseName[..index];
+      }
       var commas = new string(',', arity - 1);
       return $"typeof({baseName}<{commas}>)";
    }

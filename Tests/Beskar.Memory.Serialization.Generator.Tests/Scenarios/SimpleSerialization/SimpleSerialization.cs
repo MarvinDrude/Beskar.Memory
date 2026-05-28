@@ -71,3 +71,27 @@ public partial class NonPolyChild : NonPolyBase
    [BeskarOrder(1)]
    public int ChildValue { get; set; }
 }
+
+[BeskarObject]
+public class NonPartialClass
+{
+   [BeskarOrder(0)]
+   public int Id { get; set; }
+}
+
+[BeskarObject]
+public partial class TypeWithReadonlyMembers
+{
+   [BeskarOrder(0)]
+   public int Value { get; set; }
+
+   public readonly int ReadonlyField = 42;
+   public int ReadonlyProp => Value + 10;
+}
+
+[BeskarObject]
+public struct GenericPacketWithConstraints<TPacket> where TPacket : struct
+{
+   [BeskarOrder(0)]
+   public TPacket Packet { get; set; }
+}

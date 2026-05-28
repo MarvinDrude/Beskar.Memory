@@ -26,9 +26,4 @@
                Exclude="..\..\Common\Beskar.Memory.Code\obj\**;..\..\Common\Beskar.Memory.Code\bin\**"
                Link="Beskar.Memory.Code\%(RecursiveDir)%(Filename)%(Extension)" />
    </ItemGroup>
-
-   <ItemGroup>
-     <Folder Include="Rendering\" />
-   </ItemGroup>
-
 </Project>
