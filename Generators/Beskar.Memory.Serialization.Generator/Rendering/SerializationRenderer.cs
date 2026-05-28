@@ -433,25 +433,52 @@ public sealed class SerializationRenderer(SourceProductionContext ctx)
             paramList.Add($"member_{m.Name}");
          }
          var instantiationTarget = target.EndsWith("?") ? target.Substring(0, target.Length - 1) : target;
-         writer.WriteLineInterpolated($"value = new {instantiationTarget}({string.Join(", ", paramList)});");
 
          var matchedMemberIndices = new HashSet<int>(Spec.ConstructorParameterIndices.Array);
+         var unmatchedMembers = new List<MemberSpec>();
          for (var i = 0; i < Spec.MemberSpecs.Array.Length; i++)
          {
             if (!matchedMemberIndices.Contains(i))
             {
-               var m = Spec.MemberSpecs.Array[i];
-               writer.WriteLineInterpolated($"value.{m.Name} = member_{m.Name};");
+               unmatchedMembers.Add(Spec.MemberSpecs.Array[i]);
             }
+         }
+
+         if (unmatchedMembers.Count > 0)
+         {
+            writer.WriteLineInterpolated($"value = new {instantiationTarget}({string.Join(", ", paramList)})");
+            writer.OpenBody();
+            for (var i = 0; i < unmatchedMembers.Count; i++)
+            {
+               var m = unmatchedMembers[i];
+               var comma = i < unmatchedMembers.Count - 1 ? "," : "";
+               writer.WriteLineInterpolated($"{m.Name} = member_{m.Name}{comma}");
+            }
+            writer.CloseBodySemicolon();
+         }
+         else
+         {
+            writer.WriteLineInterpolated($"value = new {instantiationTarget}({string.Join(", ", paramList)});");
          }
       }
       else
       {
          var instantiationTarget = target.EndsWith("?") ? target.Substring(0, target.Length - 1) : target;
-         writer.WriteLineInterpolated($"value = new {instantiationTarget}();");
-         foreach (var m in Spec.MemberSpecs.Array)
+         if (Spec.MemberSpecs.Array.Length > 0)
          {
-            writer.WriteLineInterpolated($"value.{m.Name} = member_{m.Name};");
+            writer.WriteLineInterpolated($"value = new {instantiationTarget}");
+            writer.OpenBody();
+            for (var i = 0; i < Spec.MemberSpecs.Array.Length; i++)
+            {
+               var m = Spec.MemberSpecs.Array[i];
+               var comma = i < Spec.MemberSpecs.Array.Length - 1 ? "," : "";
+               writer.WriteLineInterpolated($"{m.Name} = member_{m.Name}{comma}");
+            }
+            writer.CloseBodySemicolon();
+         }
+         else
+         {
+            writer.WriteLineInterpolated($"value = new {instantiationTarget}();");
          }
       }
 

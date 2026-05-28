@@ -95,3 +95,10 @@ public struct GenericPacketWithConstraints<TPacket> where TPacket : struct
    [BeskarOrder(0)]
    public TPacket Packet { get; set; }
 }
+
+[BeskarObject]
+public class ClassWithRequiredMember
+{
+   [BeskarOrder(0)]
+   public required int RequiredValue { get; set; }
+}

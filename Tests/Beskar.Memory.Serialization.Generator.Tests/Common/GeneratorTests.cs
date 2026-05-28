@@ -89,5 +89,11 @@ public sealed class GeneratorTests
       var genericPacketSource = genericPacketTree.ToString();
       Assert.Contains("public sealed class GenericPacketWithConstraintsSerializer<TPacket> : ISerializer<global::TestNamespace.GenericPacketWithConstraints<TPacket>>", genericPacketSource);
       Assert.Contains("where TPacket : struct", genericPacketSource);
+
+      var classWithRequiredMemberTree = result.GeneratedSyntaxTrees.FirstOrDefault(t => t.FilePath.EndsWith("ClassWithRequiredMember.g.cs"));
+      Assert.NotNull(classWithRequiredMemberTree);
+      var classWithRequiredMemberSource = classWithRequiredMemberTree.ToString();
+      Assert.Contains("value = new global::TestNamespace.ClassWithRequiredMember", classWithRequiredMemberSource);
+      Assert.Contains("RequiredValue = member_RequiredValue", classWithRequiredMemberSource);
    }
 }
