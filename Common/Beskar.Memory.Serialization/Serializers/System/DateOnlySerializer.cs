@@ -1,37 +1,28 @@
-﻿using System.Buffers;
-using System.Buffers.Binary;
-using Beskar.Memory.Buffers;
+﻿using System;
+using System.Buffers;
+using System.Runtime.CompilerServices;
 using Beskar.Memory.Writers;
-using Beskar.Memory.Extensions;
 using Beskar.Memory.Serialization.Interfaces;
 
 namespace Beskar.Memory.Serialization.Serializers.System;
 
 /// <summary>
-/// Serializer for DateOnly values.
+/// Serializer for DateOnly values using Varint encoding.
 /// </summary>
 public abstract class DateOnlySerializer : ISerializer<DateOnly>
 {
+   [MethodImpl(MethodImplOptions.AggressiveInlining)]
    public static int Write(ref BufferWriter<byte> writer, scoped in DateOnly value)
    {
-      (value.DayNumber).WriteLittleEndian(ref writer);
-      return sizeof(int);
+      return VarInteger.Write(ref writer, value.DayNumber);
    }
 
+   [MethodImpl(MethodImplOptions.AggressiveInlining)]
    public static bool TryRead(ref SequenceReader<byte> reader, out DateOnly value)
    {
-      if (reader.UnreadSpan.Length >= sizeof(int))
+      if (VarInteger.TryRead(ref reader, out int dayNumber))
       {
-         var dayNumber = BinaryPrimitives.ReadInt32LittleEndian(reader.UnreadSpan);
-         reader.Advance(sizeof(int));
          value = DateOnly.FromDayNumber(dayNumber);
-         
-         return true;
-      }
-      
-      if (reader.TryReadLittleEndian(out int dn))
-      {
-         value = DateOnly.FromDayNumber(dn);
          return true;
       }
 
@@ -39,8 +30,9 @@ public abstract class DateOnlySerializer : ISerializer<DateOnly>
       return false;
    }
 
+   [MethodImpl(MethodImplOptions.AggressiveInlining)]
    public static int CalculateByteLength(scoped in DateOnly value)
    {
-      return sizeof(int);
+      return VarInteger.CalculateByteLength(value.DayNumber);
    }
 }

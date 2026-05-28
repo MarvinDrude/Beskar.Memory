@@ -17,8 +17,10 @@ public static class VarInteger
         {
             writer.Add((byte)(value | 0x80));
             value >>= 7;
+
             bytesWritten++;
         }
+
         writer.Add((byte)value);
         bytesWritten++;
         return bytesWritten;
@@ -41,8 +43,10 @@ public static class VarInteger
             value >>= 7;
             bytesWritten++;
         }
+
         writer.Add((byte)value);
         bytesWritten++;
+
         return bytesWritten;
     }
 
@@ -58,19 +62,23 @@ public static class VarInteger
     {
         value = 0;
         var shift = 0;
+
         while (shift < 35) // 5 bytes max for 32-bit uint
         {
-            if (!reader.TryRead(out byte b))
+            if (!reader.TryRead(out var b))
             {
                 return false;
             }
+
             value |= (uint)(b & 0x7F) << shift;
             if ((b & 0x80) == 0)
             {
                 return true;
             }
+
             shift += 7;
         }
+
         throw new FormatException("Invalid Varint format");
     }
 
@@ -82,6 +90,7 @@ public static class VarInteger
             value = 0;
             return false;
         }
+
         value = (int)(zigzag >> 1) ^ -(int)(zigzag & 1);
         return true;
     }
@@ -91,9 +100,10 @@ public static class VarInteger
     {
         value = 0;
         var shift = 0;
+
         while (shift < 70) // 10 bytes max for 64-bit ulong
         {
-            if (!reader.TryRead(out byte b))
+            if (!reader.TryRead(out var b))
             {
                 return false;
             }
@@ -104,6 +114,7 @@ public static class VarInteger
             }
             shift += 7;
         }
+
         throw new FormatException("Invalid Varint format");
     }
 
@@ -115,6 +126,7 @@ public static class VarInteger
             value = 0;
             return false;
         }
+
         value = (long)(zigzag >> 1) ^ -(long)(zigzag & 1);
         return true;
     }
@@ -128,6 +140,7 @@ public static class VarInteger
             value >>= 7;
             bytes++;
         }
+
         return bytes;
     }
 

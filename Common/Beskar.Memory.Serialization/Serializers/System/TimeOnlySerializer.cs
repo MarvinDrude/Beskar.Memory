@@ -1,37 +1,28 @@
-﻿using System.Buffers;
-using System.Buffers.Binary;
-using Beskar.Memory.Buffers;
+using System;
+using System.Buffers;
+using System.Runtime.CompilerServices;
 using Beskar.Memory.Writers;
-using Beskar.Memory.Extensions;
 using Beskar.Memory.Serialization.Interfaces;
 
 namespace Beskar.Memory.Serialization.Serializers.System;
 
 /// <summary>
-/// Serializer for TimeOnly values.
+/// Serializer for TimeOnly values using Varint encoding.
 /// </summary>
 public abstract class TimeOnlySerializer : ISerializer<TimeOnly>
 {
+   [MethodImpl(MethodImplOptions.AggressiveInlining)]
    public static int Write(ref BufferWriter<byte> writer, scoped in TimeOnly value)
    {
-      (value.Ticks).WriteLittleEndian(ref writer);
-      return sizeof(long);
+      return VarInteger.Write(ref writer, value.Ticks);
    }
 
+   [MethodImpl(MethodImplOptions.AggressiveInlining)]
    public static bool TryRead(ref SequenceReader<byte> reader, out TimeOnly value)
    {
-      if (reader.UnreadSpan.Length >= sizeof(long))
+      if (VarInteger.TryRead(ref reader, out long ticks))
       {
-         var ticks = BinaryPrimitives.ReadInt64LittleEndian(reader.UnreadSpan);
-         reader.Advance(sizeof(long));
          value = new TimeOnly(ticks);
-         
-         return true;
-      }
-      
-      if (reader.TryReadLittleEndian(out long t))
-      {
-         value = new TimeOnly(t);
          return true;
       }
 
@@ -39,8 +30,9 @@ public abstract class TimeOnlySerializer : ISerializer<TimeOnly>
       return false;
    }
 
+   [MethodImpl(MethodImplOptions.AggressiveInlining)]
    public static int CalculateByteLength(scoped in TimeOnly value)
    {
-      return sizeof(long);
+      return VarInteger.CalculateByteLength(value.Ticks);
    }
 }

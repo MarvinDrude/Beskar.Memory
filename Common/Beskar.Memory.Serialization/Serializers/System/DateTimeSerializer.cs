@@ -1,37 +1,28 @@
-﻿using System.Buffers;
-using System.Buffers.Binary;
-using Beskar.Memory.Buffers;
+﻿using System;
+using System.Buffers;
+using System.Runtime.CompilerServices;
 using Beskar.Memory.Writers;
-using Beskar.Memory.Extensions;
 using Beskar.Memory.Serialization.Interfaces;
 
 namespace Beskar.Memory.Serialization.Serializers.System;
 
 /// <summary>
-/// Serializer for DateTime values.
+/// Serializer for DateTime values using Varint encoding.
 /// </summary>
 public abstract class DateTimeSerializer : ISerializer<DateTime>
 {
+   [MethodImpl(MethodImplOptions.AggressiveInlining)]
    public static int Write(ref BufferWriter<byte> writer, scoped in DateTime value)
    {
-      (value.ToBinary()).WriteLittleEndian(ref writer);
-      return sizeof(long);
+      return VarInteger.Write(ref writer, value.ToBinary());
    }
 
+   [MethodImpl(MethodImplOptions.AggressiveInlining)]
    public static bool TryRead(ref SequenceReader<byte> reader, out DateTime value)
    {
-      if (reader.UnreadSpan.Length >= sizeof(long))
+      if (VarInteger.TryRead(ref reader, out long binary))
       {
-         var binary = BinaryPrimitives.ReadInt64LittleEndian(reader.UnreadSpan);
-         reader.Advance(sizeof(long));
          value = DateTime.FromBinary(binary);
-         
-         return true;
-      }
-      
-      if (reader.TryReadLittleEndian(out long b))
-      {
-         value = DateTime.FromBinary(b);
          return true;
       }
 
@@ -39,8 +30,9 @@ public abstract class DateTimeSerializer : ISerializer<DateTime>
       return false;
    }
 
+   [MethodImpl(MethodImplOptions.AggressiveInlining)]
    public static int CalculateByteLength(scoped in DateTime value)
    {
-      return sizeof(long);
+      return VarInteger.CalculateByteLength(value.ToBinary());
    }
 }
