@@ -689,14 +689,24 @@ public sealed class SerializationRenderer(SourceProductionContext ctx)
       {
          if (p.Symbol.Name == name)
          {
-            return p.Property.Type.Symbol.FullName;
+            var fullName = p.Property.Type.Symbol.FullName;
+            if (p.Property.Type.Type.IsReferenceType && p.Property.Type.Type.NullableAnnotation == NullableAnnotation.Annotated && !fullName.EndsWith("?"))
+            {
+               return $"{fullName}?";
+            }
+            return fullName;
          }
       }
       foreach (var f in Spec.TypeArchetype.NamedType.Fields.Array)
       {
          if (f.Symbol.Name == name)
          {
-            return f.Field.Type.Symbol.FullName;
+            var fullName = f.Field.Type.Symbol.FullName;
+            if (f.Field.Type.Type.IsReferenceType && f.Field.Type.Type.NullableAnnotation == NullableAnnotation.Annotated && !fullName.EndsWith("?"))
+            {
+               return $"{fullName}?";
+            }
+            return fullName;
          }
       }
       return "object";
