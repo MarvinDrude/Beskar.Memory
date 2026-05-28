@@ -1,4 +1,4 @@
-﻿using System.Buffers;
+using System.Buffers;
 using System.Buffers.Binary;
 using Beskar.Memory.Buffers;
 using Beskar.Memory.Writers;
@@ -65,6 +65,8 @@ public abstract class Array2DSerializer<T> : ISerializer<T[,]?>
       {
          throw new InvalidOperationException("Dimension 1 length cannot be negative.");
       }
+
+      CollectionValidation.ValidateLength((long)dim0 * dim1);
 
       var tryReadElement = SerializerRegistry<T>.GetTryRead();
       var array = new T[dim0, dim1];

@@ -1,4 +1,4 @@
-﻿using System.Buffers;
+using System.Buffers;
 using System.Buffers.Binary;
 using System.Collections.Generic;
 using Beskar.Memory.Buffers;
@@ -52,6 +52,8 @@ public abstract class SortedDictionarySerializer<TKey, TValue> : ISerializer<Sor
          value = null;
          return true;
       }
+
+      CollectionValidation.ValidateLength(length);
 
       var tryReadKey = SerializerRegistry<TKey>.GetTryRead();
       var tryReadValue = SerializerRegistry<TValue>.GetTryRead();

@@ -1,4 +1,4 @@
-﻿using System.Buffers;
+using System.Buffers;
 using System.Buffers.Binary;
 using System.Collections.Generic;
 using Beskar.Memory.Buffers;
@@ -48,6 +48,8 @@ public abstract class StackSerializer<T> : ISerializer<Stack<T>?>
          value = null;
          return true;
       }
+
+      CollectionValidation.ValidateLength(length);
 
       var tryReadElement = SerializerRegistry<T>.GetTryRead();
       var array = new T[length];

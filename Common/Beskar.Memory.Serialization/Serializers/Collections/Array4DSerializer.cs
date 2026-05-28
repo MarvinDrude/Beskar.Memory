@@ -1,4 +1,4 @@
-﻿using System.Buffers;
+using System.Buffers;
 using System.Buffers.Binary;
 using Beskar.Memory.Buffers;
 using Beskar.Memory.Writers;
@@ -77,6 +77,8 @@ public abstract class Array4DSerializer<T> : ISerializer<T[,,,]?>
       {
          throw new InvalidOperationException("Dimension lengths cannot be negative.");
       }
+
+      CollectionValidation.ValidateLength((long)dim0 * dim1 * dim2 * dim3);
 
       var tryReadElement = SerializerRegistry<T>.GetTryRead();
       var array = new T[dim0, dim1, dim2, dim3];

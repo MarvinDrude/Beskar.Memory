@@ -1,4 +1,4 @@
-﻿using System.Buffers;
+using System.Buffers;
 using System.Buffers.Binary;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -49,6 +49,8 @@ public abstract class ConcurrentBagSerializer<T> : ISerializer<ConcurrentBag<T>?
          value = null;
          return true;
       }
+
+      CollectionValidation.ValidateLength(length);
 
       var tryReadElement = SerializerRegistry<T>.GetTryRead();
       var list = new List<T>(length);

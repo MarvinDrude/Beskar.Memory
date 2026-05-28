@@ -7,16 +7,45 @@ namespace Beskar.Memory.Serialization;
 /// <summary>
 /// Provides a lightweight, allocation-free context for tracking object references during deserialization.
 /// </summary>
-public struct DeserializationContext : IDisposable
+public struct DeserializationContext(BeSerializerOptions? options) : IDisposable
 {
    [ThreadStatic]
    private static DeserializationContext _current;
    public static ref DeserializationContext Current => ref _current;
 
-   private object?[]? _references;
-   private int[]? _ids;
-   private Dictionary<int, object>? _dict;
-   private int _count;
+   private object?[]? _references = null;
+   private int[]? _ids = null;
+   private Dictionary<int, object>? _dict = null;
+
+   private int _count = 0;
+   private int _depth = 0;
+
+   private BeSerializerOptions? _options = options;
+
+   /// <summary>
+   /// Gets the active deserialization options.
+   /// </summary>
+   public BeSerializerOptions Options => _options ??= BeSerializerOptions.Default;
+
+   /// <summary>
+   /// Increments recursion depth and checks against configured limits.
+   /// </summary>
+   public void IncrementDepth()
+   {
+      _depth++;
+      if (_depth > Options.MaxDepth)
+      {
+         throw new InvalidOperationException($"Max depth of {Options.MaxDepth} exceeded during deserialization, preventing stack overflow.");
+      }
+   }
+
+   /// <summary>
+   /// Decrements recursion depth.
+   /// </summary>
+   public void DecrementDepth()
+   {
+      _depth--;
+   }
 
    public void Register(int id, object obj)
    {
@@ -97,5 +126,6 @@ public struct DeserializationContext : IDisposable
 
       _dict = null;
       _count = 0;
+      _depth = 0;
    }
 }

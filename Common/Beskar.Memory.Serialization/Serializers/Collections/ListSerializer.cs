@@ -1,4 +1,4 @@
-﻿using System.Buffers;
+using System.Buffers;
 using System.Collections.Generic;
 using Beskar.Memory.Writers;
 using Beskar.Memory.Serialization.Interfaces;
@@ -41,6 +41,8 @@ public abstract class ListSerializer<T> : ISerializer<List<T>?>
          value = null;
          return true;
       }
+
+      CollectionValidation.ValidateLength(length);
 
       var tryReadElement = SerializerRegistry<T>.GetTryRead();
       var list = new List<T>(length);

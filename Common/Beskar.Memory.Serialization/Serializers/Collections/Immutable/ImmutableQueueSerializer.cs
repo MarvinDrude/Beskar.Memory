@@ -1,4 +1,4 @@
-﻿using System.Buffers;
+using System.Buffers;
 using System.Buffers.Binary;
 using System.Collections.Generic;
 using System.Collections.Immutable;
@@ -53,6 +53,8 @@ public abstract class ImmutableQueueSerializer<T> : ISerializer<ImmutableQueue<T
          value = null;
          return true;
       }
+
+      CollectionValidation.ValidateLength(length);
 
       var tryReadElement = SerializerRegistry<T>.GetTryRead();
       var array = new T[length];

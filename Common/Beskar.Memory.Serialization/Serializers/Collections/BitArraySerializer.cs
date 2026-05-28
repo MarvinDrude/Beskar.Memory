@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Buffers;
 using System.Buffers.Binary;
 using System.Collections;
@@ -56,6 +56,8 @@ public abstract class BitArraySerializer : ISerializer<BitArray?>
          value = null;
          return true;
       }
+
+      CollectionValidation.ValidateLength(length);
 
       var byteCount = (length + 7) / 8;
       if (reader.Remaining < byteCount)

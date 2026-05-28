@@ -1,4 +1,4 @@
-﻿using System.Buffers;
+using System.Buffers;
 using System.Buffers.Binary;
 using System.Collections.Generic;
 using System.Collections.Immutable;
@@ -52,6 +52,8 @@ public abstract class ImmutableSortedDictionarySerializer<TKey, TValue> : ISeria
          value = null;
          return true;
       }
+
+      CollectionValidation.ValidateLength(length);
 
       var tryReadKey = SerializerRegistry<TKey>.GetTryRead();
       var tryReadValue = SerializerRegistry<TValue>.GetTryRead();

@@ -352,6 +352,54 @@ public class BeSerializerTests
          context.Dispose();
       }
    }
+
+   [Fact]
+   public void TestMaxDepthExceededThrowsException()
+   {
+      SerializerRegistry<CyclicNode>.Register<CyclicNodeSerializer>();
+      SerializerRegistry<CyclicNode?>.Register<CyclicNodeSerializer>();
+
+      // Create a chain of 10 nodes (depth 10)
+      var root = new CyclicNode { Name = "Node 0" };
+      var current = root;
+      for (int i = 1; i < 10; i++)
+      {
+         current.Next = new CyclicNode { Name = $"Node {i}" };
+         current = current.Next;
+      }
+
+      // 1. With default options (MaxDepth = 64), it should serialize successfully
+      var bytes = BeSerializer.Serialize(root);
+      Assert.NotNull(bytes);
+
+      // 2. With options setting MaxDepth = 5, it should throw InvalidOperationException during serialization
+      var options = new BeSerializerOptions { MaxDepth = 5 };
+      Assert.Throws<InvalidOperationException>(() => BeSerializer.Serialize(root, options));
+
+      // 3. With options setting MaxDepth = 5, it should throw InvalidOperationException during deserialization
+      var sequence = new ReadOnlySequence<byte>(bytes);
+      Assert.Throws<InvalidOperationException>(() => BeSerializer.Deserialize<CyclicNode>(sequence, options));
+   }
+
+   [Fact]
+   public void TestMaxCollectionLengthExceededThrowsException()
+   {
+      // Create a valid serialized array of 20 integers
+      var array = new int[20];
+      for (int i = 0; i < 20; i++) array[i] = i;
+
+      var bytes = BeSerializer.Serialize(array);
+      Assert.NotNull(bytes);
+
+      // Deserializing with MaxCollectionLength = 25 should succeed
+      var options1 = new BeSerializerOptions { MaxCollectionLength = 25 };
+      var result = BeSerializer.Deserialize<int[]>(bytes, options1);
+      Assert.Equal(20, result.Length);
+
+      // Deserializing with MaxCollectionLength = 10 should throw InvalidOperationException
+      var options2 = new BeSerializerOptions { MaxCollectionLength = 10 };
+      Assert.Throws<InvalidOperationException>(() => BeSerializer.Deserialize<int[]>(bytes, options2));
+   }
 }
 
 public class CyclicNode
@@ -378,10 +426,12 @@ public sealed class CyclicNodeSerializer : ISerializer<CyclicNode>, ISerializer<
 
       int newId = context.Register(value);
       bytesWritten = VarInteger.Write(ref writer, newId);
+      context.IncrementDepth();
 
       bytesWritten += SerializerRegistry<string>.GetWrite()(ref writer, value.Name);
       bytesWritten += SerializerRegistry<CyclicNode?>.GetWrite()(ref writer, value.Next);
 
+      context.DecrementDepth();
       return bytesWritten;
    }
 
@@ -406,6 +456,8 @@ public sealed class CyclicNodeSerializer : ISerializer<CyclicNode>, ISerializer<
          return true;
       }
 
+      context.IncrementDepth();
+
       value = new CyclicNode { Name = null! };
       context.Register(refTag, value);
 
@@ -423,6 +475,7 @@ public sealed class CyclicNodeSerializer : ISerializer<CyclicNode>, ISerializer<
       }
       value.Next = member_Next;
 
+      context.DecrementDepth();
       return true;
    }
 
@@ -442,10 +495,12 @@ public sealed class CyclicNodeSerializer : ISerializer<CyclicNode>, ISerializer<
 
       int newId = context.Register(value);
       totalLength = VarInteger.CalculateByteLength(newId);
+      context.IncrementDepth();
 
       totalLength += SerializerRegistry<string>.GetCalculateByteLength()(value.Name);
       totalLength += SerializerRegistry<CyclicNode?>.GetCalculateByteLength()(value.Next);
 
+      context.DecrementDepth();
       return totalLength;
    }
 }

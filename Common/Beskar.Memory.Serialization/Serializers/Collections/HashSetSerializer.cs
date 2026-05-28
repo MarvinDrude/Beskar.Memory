@@ -1,4 +1,4 @@
-﻿using System.Buffers;
+using System.Buffers;
 using System.Buffers.Binary;
 using System.Collections.Generic;
 using Beskar.Memory.Buffers;
@@ -49,6 +49,8 @@ public abstract class HashSetSerializer<T> : ISerializer<HashSet<T>?>
          value = null;
          return true;
       }
+
+      CollectionValidation.ValidateLength(length);
 
       var tryReadElement = SerializerRegistry<T>.GetTryRead();
       var hashSet = new HashSet<T>(length);

@@ -114,5 +114,7 @@ public sealed class GeneratorTests
       Assert.Contains("context.Register(refTag, value);", cyclicNodeSource);
       Assert.Contains("value.Name = member_Name;", cyclicNodeSource);
       Assert.Contains("value.Next = member_Next;", cyclicNodeSource);
+      Assert.Contains("context.IncrementDepth();", cyclicNodeSource);
+      Assert.Contains("context.DecrementDepth();", cyclicNodeSource);
    }
 }

@@ -7,16 +7,45 @@ namespace Beskar.Memory.Serialization;
 /// <summary>
 /// Provides a lightweight, allocation-free context for tracking object references during serialization.
 /// </summary>
-public struct SerializationContext : IDisposable
+public struct SerializationContext(BeSerializerOptions? options) : IDisposable
 {
    [ThreadStatic]
    private static SerializationContext _current;
    public static ref SerializationContext Current => ref _current;
 
-   private object?[]? _references;
-   private int[]? _ids;
-   private Dictionary<object, int>? _dict;
-   private int _count;
+   private object?[]? _references = null;
+   private int[]? _ids = null;
+   private Dictionary<object, int>? _dict = null;
+
+   private int _count = 0;
+   private int _depth = 0;
+
+   private BeSerializerOptions? _options = options;
+
+   /// <summary>
+   /// Gets the active serialization options.
+   /// </summary>
+   public BeSerializerOptions Options => _options ??= BeSerializerOptions.Default;
+
+   /// <summary>
+   /// Increments recursion depth and checks against configured limits.
+   /// </summary>
+   public void IncrementDepth()
+   {
+      _depth++;
+      if (_depth > Options.MaxDepth)
+      {
+         throw new InvalidOperationException($"Max depth of {Options.MaxDepth} exceeded during serialization, preventing stack overflow.");
+      }
+   }
+
+   /// <summary>
+   /// Decrements recursion depth.
+   /// </summary>
+   public void DecrementDepth()
+   {
+      _depth--;
+   }
 
    public bool TryGetReferenceId(object obj, out int referenceId)
    {
@@ -78,8 +107,8 @@ public struct SerializationContext : IDisposable
 
          var id = _count + 1;
          _dict[obj] = id;
-         _count++;
 
+         _count++;
          return id;
       }
 
@@ -107,5 +136,6 @@ public struct SerializationContext : IDisposable
 
       _dict = null;
       _count = 0;
+      _depth = 0;
    }
 }

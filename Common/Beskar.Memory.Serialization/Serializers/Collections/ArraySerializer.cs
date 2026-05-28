@@ -1,4 +1,4 @@
-﻿using System.Buffers;
+using System.Buffers;
 using Beskar.Memory.Writers;
 using Beskar.Memory.Serialization.Interfaces;
 
@@ -40,6 +40,8 @@ public abstract class ArraySerializer<T> : ISerializer<T[]?>
          value = null;
          return true;
       }
+
+      CollectionValidation.ValidateLength(length);
 
       var tryReadElement = SerializerRegistry<T>.GetTryRead();
       var array = new T[length];

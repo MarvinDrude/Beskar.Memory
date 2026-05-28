@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Buffers;
 using System.Buffers.Binary;
 using Beskar.Memory.Buffers;
@@ -40,6 +40,8 @@ public abstract class ArraySegmentSerializer<T> : ISerializer<ArraySegment<T>>
       {
          throw new InvalidOperationException("Serialized ArraySegment length cannot be negative.");
       }
+
+      CollectionValidation.ValidateLength(length);
 
       var tryReadElement = SerializerRegistry<T>.GetTryRead();
       var array = new T[length];

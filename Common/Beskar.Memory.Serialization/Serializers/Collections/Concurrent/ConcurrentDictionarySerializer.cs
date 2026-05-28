@@ -1,4 +1,4 @@
-﻿using System.Buffers;
+using System.Buffers;
 using System.Buffers.Binary;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -53,6 +53,8 @@ public abstract class ConcurrentDictionarySerializer<TKey, TValue> : ISerializer
          value = null;
          return true;
       }
+
+      CollectionValidation.ValidateLength(length);
 
       var tryReadKey = SerializerRegistry<TKey>.GetTryRead();
       var tryReadValue = SerializerRegistry<TValue>.GetTryRead();

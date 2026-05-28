@@ -1,4 +1,4 @@
-﻿using System.Buffers;
+using System.Buffers;
 using System.Buffers.Binary;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -53,6 +53,8 @@ public abstract class ReadOnlyDictionarySerializer<TKey, TValue> : ISerializer<R
          value = null;
          return true;
       }
+
+      CollectionValidation.ValidateLength(length);
 
       var tryReadKey = SerializerRegistry<TKey>.GetTryRead();
       var tryReadValue = SerializerRegistry<TValue>.GetTryRead();

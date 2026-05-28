@@ -191,6 +191,7 @@ public sealed class SerializationRenderer(SourceProductionContext ctx)
 
          writer.WriteLine("int newId = context.Register(value);");
          writer.WriteLine("bytesWritten = VarInteger.Write(ref writer, newId);");
+         writer.WriteLine("context.IncrementDepth();");
       }
       else
       {
@@ -279,10 +280,18 @@ public sealed class SerializationRenderer(SourceProductionContext ctx)
             }
          }
 
+         if (!Spec.TypeArchetype.Type.IsValueType)
+         {
+            writer.WriteLine("context.DecrementDepth();");
+         }
          writer.WriteLine("return bytesWritten;");
       }
       else
       {
+         if (!Spec.TypeArchetype.Type.IsValueType)
+         {
+            writer.WriteLine("context.DecrementDepth();");
+         }
          writer.WriteLine("return bytesWritten;");
       }
    }
@@ -303,6 +312,10 @@ public sealed class SerializationRenderer(SourceProductionContext ctx)
          WriteTryReadMembers(ref writer);
          WriteTryReadReconstruction(ref writer);
          WriteTryReadCallback(ref writer);
+         if (!Spec.TypeArchetype.Type.IsValueType)
+         {
+            writer.WriteLine("context.DecrementDepth();");
+         }
          writer.WriteLine("return true;");
       }
 
@@ -361,6 +374,8 @@ public sealed class SerializationRenderer(SourceProductionContext ctx)
          writer.WriteLine("return true;");
          writer.CloseBody();
          writer.WriteLine();
+
+         writer.WriteLine("context.IncrementDepth();");
       }
       else
       {
@@ -630,6 +645,7 @@ public sealed class SerializationRenderer(SourceProductionContext ctx)
 
          writer.WriteLine("int newId = context.Register(value);");
          writer.WriteLine("totalLength = VarInteger.CalculateByteLength(newId);");
+         writer.WriteLine("context.IncrementDepth();");
       }
       else
       {
@@ -711,10 +727,18 @@ public sealed class SerializationRenderer(SourceProductionContext ctx)
             }
          }
 
+         if (!Spec.TypeArchetype.Type.IsValueType)
+         {
+            writer.WriteLine("context.DecrementDepth();");
+         }
          writer.WriteLine("return totalLength;");
       }
       else
       {
+         if (!Spec.TypeArchetype.Type.IsValueType)
+         {
+            writer.WriteLine("context.DecrementDepth();");
+         }
          writer.WriteLine("return totalLength;");
       }
    }

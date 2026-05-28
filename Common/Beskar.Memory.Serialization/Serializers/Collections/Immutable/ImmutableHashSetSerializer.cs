@@ -1,4 +1,4 @@
-﻿using System.Buffers;
+using System.Buffers;
 using System.Buffers.Binary;
 using System.Collections.Immutable;
 using Beskar.Memory.Buffers;
@@ -48,6 +48,8 @@ public abstract class ImmutableHashSetSerializer<T> : ISerializer<ImmutableHashS
          value = null;
          return true;
       }
+
+      CollectionValidation.ValidateLength(length);
 
       var tryReadElement = SerializerRegistry<T>.GetTryRead();
       var builder = ImmutableHashSet.CreateBuilder<T>();
