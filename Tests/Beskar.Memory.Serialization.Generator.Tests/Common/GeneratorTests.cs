@@ -61,7 +61,7 @@ public sealed class GeneratorTests
       Assert.NotNull(unionTree);
       var unionSource = unionTree.ToString();
       Assert.Contains("if (value is global::TestNamespace.UnionChild child1)", unionSource);
-      Assert.Contains("Varint.Write(ref writer, 1);", unionSource);
+      Assert.Contains("VarInteger.Write(ref writer, 1);", unionSource);
       Assert.Contains("if (tag == 1)", unionSource);
       Assert.Contains("SerializerRegistry<global::TestNamespace.UnionBase?>.Register<UnionBaseSerializer>();", unionSource);
 
