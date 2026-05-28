@@ -14,6 +14,8 @@
   </Folder>
   <Folder Name="/Benchmarks/">
     <Project Path="Benchmarks/Beskar.Experiments/Beskar.Experiments.csproj" />
+    <Project Path="Benchmarks/Beskar.Memory.Benchmarks/Beskar.Memory.Benchmarks.csproj" />
+    <Project Path="Benchmarks/Beskar.Memory.Benchmarks.Live/Beskar.Memory.Benchmarks.Live.csproj" />
   </Folder>
   <Folder Name="/Bundles/">
     <Project Path="Bundles/Beskar.Memory.Code.TypeIdGenerator/Beskar.Memory.Code.TypeIdGenerator.csproj" />
