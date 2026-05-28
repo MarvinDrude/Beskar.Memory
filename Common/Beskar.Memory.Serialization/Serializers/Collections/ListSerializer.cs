@@ -1,14 +1,12 @@
 ﻿using System.Buffers;
-using System.Buffers.Binary;
 using System.Collections.Generic;
-using Beskar.Memory.Buffers;
 using Beskar.Memory.Writers;
 using Beskar.Memory.Serialization.Interfaces;
 
 namespace Beskar.Memory.Serialization.Serializers.Collections;
 
 /// <summary>
-/// Serializer for List values.
+/// Serializer for List values using Varint count prefix.
 /// </summary>
 public abstract class ListSerializer<T> : ISerializer<List<T>?>
 {
@@ -16,17 +14,12 @@ public abstract class ListSerializer<T> : ISerializer<List<T>?>
    {
       if (value is null)
       {
-         var lengthSpan = writer.AcquireSpan(sizeof(int));
-         BinaryPrimitives.WriteInt32LittleEndian(lengthSpan, -1);
-         return sizeof(int);
+         return VarInteger.Write(ref writer, -1);
       }
 
       var writeElement = SerializerRegistry<T>.GetWrite();
-      var lengthSpanNotNil = writer.AcquireSpan(sizeof(int));
+      var written = VarInteger.Write(ref writer, value.Count);
       
-      BinaryPrimitives.WriteInt32LittleEndian(lengthSpanNotNil, value.Count);
-
-      var written = sizeof(int);
       for (var i = 0; i < value.Count; i++)
       {
          written += writeElement(ref writer, value[i]);
@@ -37,7 +30,7 @@ public abstract class ListSerializer<T> : ISerializer<List<T>?>
 
    public static bool TryRead(ref SequenceReader<byte> reader, out List<T>? value)
    {
-      if (!reader.TryReadLittleEndian(out int length))
+      if (!VarInteger.TryRead(ref reader, out int length))
       {
          value = null;
          return false;
@@ -71,11 +64,11 @@ public abstract class ListSerializer<T> : ISerializer<List<T>?>
    {
       if (value is null)
       {
-         return sizeof(int);
+         return VarInteger.CalculateByteLength(-1);
       }
 
       var calculateElement = SerializerRegistry<T>.GetCalculateByteLength();
-      var length = sizeof(int);
+      var length = VarInteger.CalculateByteLength(value.Count);
       
       for (var i = 0; i < value.Count; i++)
       {

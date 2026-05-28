@@ -14,7 +14,7 @@ public class BeSerializerTests
    {
       var bytes = BeSerializer.Serialize(TestValue);
       Assert.NotNull(bytes);
-      Assert.Equal(sizeof(int), bytes.Length);
+      Assert.Equal(2, bytes.Length);
 
       var deserialized = BeSerializer.Deserialize<int>(bytes);
       Assert.Equal(TestValue, deserialized);
@@ -25,7 +25,7 @@ public class BeSerializerTests
    {
       Span<byte> buffer = stackalloc byte[16];
       var written = BeSerializer.Serialize(TestValue, buffer);
-      Assert.Equal(sizeof(int), written);
+      Assert.Equal(2, written);
 
       var deserialized = BeSerializer.Deserialize<int>(buffer[..written]);
       Assert.Equal(TestValue, deserialized);
@@ -39,8 +39,8 @@ public class BeSerializerTests
       try
       {
          var written = BeSerializer.Serialize(TestValue, ref writer);
-         Assert.Equal(sizeof(int), written);
-         Assert.Equal(sizeof(int), writer.Position);
+         Assert.Equal(2, written);
+         Assert.Equal(2, writer.Position);
 
          var deserialized = BeSerializer.Deserialize<int>(writer.WrittenSpan);
          Assert.Equal(TestValue, deserialized);
@@ -55,7 +55,7 @@ public class BeSerializerTests
    public void TestCalculateByteLength()
    {
       var length = BeSerializer.CalculateByteLength(TestValue);
-      Assert.Equal(sizeof(int), length);
+      Assert.Equal(2, length);
    }
 
    [Fact]
@@ -106,7 +106,7 @@ public class BeSerializerTests
 
       var deserialized = BeSerializer.Deserialize<int>(ref reader);
       Assert.Equal(TestValue, deserialized);
-      Assert.Equal(sizeof(int), reader.Consumed);
+      Assert.Equal(2, reader.Consumed);
    }
 
    [Fact]
@@ -162,6 +162,6 @@ public class BeSerializerTests
       var success = BeSerializer.TryDeserialize<int>(ref reader, out int value);
       Assert.True(success);
       Assert.Equal(TestValue, value);
-      Assert.Equal(sizeof(int), reader.Consumed);
+      Assert.Equal(2, reader.Consumed);
    }
 }

@@ -147,8 +147,7 @@ public sealed class SerializationRenderer(SourceProductionContext ctx)
           writer.OpenBody();
           if (Spec.UnionSpecs.Array.Length > 0)
           {
-             writer.WriteLine("(0).WriteLittleEndian(ref writer);");
-             writer.WriteLine("return sizeof(int);");
+             writer.WriteLine("return Varint.Write(ref writer, 0);");
           }
           else
           {
@@ -166,8 +165,8 @@ public sealed class SerializationRenderer(SourceProductionContext ctx)
                 var unionTypeNullable = union.Type.Type.IsValueType ? unionType : $"{unionType}?";
                 writer.WriteLineInterpolated($"if (value is {unionType} child{union.Tag})");
                 writer.OpenBody();
-                writer.WriteLineInterpolated($"({union.Tag}).WriteLittleEndian(ref writer);");
-                writer.WriteLineInterpolated($"return sizeof(int) + SerializerRegistry<{unionTypeNullable}>.GetWrite()(ref writer, child{union.Tag});");
+                writer.WriteLineInterpolated($"var bytesWritten = Varint.Write(ref writer, {union.Tag});");
+                writer.WriteLineInterpolated($"return bytesWritten + SerializerRegistry<{unionTypeNullable}>.GetWrite()(ref writer, child{union.Tag});");
                 writer.CloseBody();
              }
              writer.WriteLine("throw new InvalidOperationException($\"Unknown union type: {value.GetType()}\");");
@@ -189,8 +188,8 @@ public sealed class SerializationRenderer(SourceProductionContext ctx)
                 var unionTypeNullable = union.Type.Type.IsValueType ? unionType : $"{unionType}?";
                 writer.WriteLineInterpolated($"if (value is {unionType} child{union.Tag})");
                 writer.OpenBody();
-                writer.WriteLineInterpolated($"({union.Tag}).WriteLittleEndian(ref writer);");
-                writer.WriteLineInterpolated($"return sizeof(int) + SerializerRegistry<{unionTypeNullable}>.GetWrite()(ref writer, child{union.Tag});");
+                writer.WriteLineInterpolated($"var bytesWritten = Varint.Write(ref writer, {union.Tag});");
+                writer.WriteLineInterpolated($"return bytesWritten + SerializerRegistry<{unionTypeNullable}>.GetWrite()(ref writer, child{union.Tag});");
                 writer.CloseBody();
              }
              writer.WriteLine("throw new InvalidOperationException($\"Unknown union type: {value.GetType()}\");");
@@ -286,7 +285,7 @@ public sealed class SerializationRenderer(SourceProductionContext ctx)
       {
          if (Spec.UnionSpecs.Array.Length > 0)
          {
-            writer.WriteLine("if (!reader.TryReadLittleEndian(out int tag))");
+            writer.WriteLine("if (!Varint.TryRead(ref reader, out int tag))");
             writer.OpenBody();
             writer.WriteLine("value = default;");
             writer.WriteLine("return false;");
@@ -340,7 +339,7 @@ public sealed class SerializationRenderer(SourceProductionContext ctx)
       {
          if (Spec.UnionSpecs.Array.Length > 0)
          {
-            writer.WriteLine("if (!reader.TryReadLittleEndian(out int tag))");
+            writer.WriteLine("if (!Varint.TryRead(ref reader, out int tag))");
             writer.OpenBody();
             writer.WriteLine("value = default;");
             writer.WriteLine("return false;");
@@ -484,7 +483,7 @@ public sealed class SerializationRenderer(SourceProductionContext ctx)
          writer.OpenBody();
          if (Spec.UnionSpecs.Array.Length > 0)
          {
-            writer.WriteLine("return sizeof(int);");
+            writer.WriteLine("return Varint.CalculateByteLength(0);");
          }
          else
          {
@@ -500,7 +499,7 @@ public sealed class SerializationRenderer(SourceProductionContext ctx)
                var unionType = union.Type.Symbol.FullName;
                writer.WriteLineInterpolated($"if (value is {unionType} child{union.Tag})");
                writer.OpenBody();
-               writer.WriteLineInterpolated($"return sizeof(int) + SerializerRegistry<{unionType}>.GetCalculateByteLength()(child{union.Tag});");
+               writer.WriteLineInterpolated($"return Varint.CalculateByteLength({union.Tag}) + SerializerRegistry<{unionType}>.GetCalculateByteLength()(child{union.Tag});");
                writer.CloseBody();
             }
             writer.WriteLine("throw new InvalidOperationException($\"Unknown union type: {value.GetType()}\");");
@@ -517,7 +516,7 @@ public sealed class SerializationRenderer(SourceProductionContext ctx)
                var unionType = union.Type.Symbol.FullName;
                writer.WriteLineInterpolated($"if (value is {unionType} child{union.Tag})");
                writer.OpenBody();
-               writer.WriteLineInterpolated($"return sizeof(int) + SerializerRegistry<{unionType}>.GetCalculateByteLength()(child{union.Tag});");
+               writer.WriteLineInterpolated($"return Varint.CalculateByteLength({union.Tag}) + SerializerRegistry<{unionType}>.GetCalculateByteLength()(child{union.Tag});");
                writer.CloseBody();
             }
             writer.WriteLine("throw new InvalidOperationException($\"Unknown union type: {value.GetType()}\");");

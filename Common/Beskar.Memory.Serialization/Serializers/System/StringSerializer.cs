@@ -1,8 +1,6 @@
-﻿using System.Buffers;
-using System.Buffers.Binary;
-using System.Diagnostics.CodeAnalysis;
+﻿using System;
+using System.Buffers;
 using System.Text;
-using Beskar.Memory.Buffers;
 using Beskar.Memory.Writers;
 using Beskar.Memory.Owners;
 using Beskar.Memory.Serialization.Interfaces;
@@ -10,7 +8,7 @@ using Beskar.Memory.Serialization.Interfaces;
 namespace Beskar.Memory.Serialization.Serializers.System;
 
 /// <summary>
-/// Serializer for string.
+/// Serializer for string using Varint length prefix.
 /// </summary>
 public abstract class StringSerializer : ISerializer<string?>
 {
@@ -18,24 +16,21 @@ public abstract class StringSerializer : ISerializer<string?>
    {
       if (value is null)
       {
-         var lengthSpan = writer.AcquireSpan(sizeof(int));
-         BinaryPrimitives.WriteInt32LittleEndian(lengthSpan, -1);
-
-         return sizeof(int);
+         return VarInteger.Write(ref writer, -1);
       }
 
       var byteCount = Encoding.UTF8.GetByteCount(value);
-      var span = writer.AcquireSpan(sizeof(int) + byteCount);
+      var headerLen = VarInteger.Write(ref writer, byteCount);
+      
+      var span = writer.AcquireSpan(byteCount);
+      Encoding.UTF8.GetBytes(value, span);
 
-      BinaryPrimitives.WriteInt32LittleEndian(span, byteCount);
-      Encoding.UTF8.GetBytes(value, span[sizeof(int)..]);
-
-      return sizeof(int) + byteCount;
+      return headerLen + byteCount;
    }
 
    public static bool TryRead(ref SequenceReader<byte> reader, out string? value)
    {
-      if (!reader.TryReadLittleEndian(out int length))
+      if (!VarInteger.TryRead(ref reader, out int length))
       {
          value = null;
          return false;
@@ -76,7 +71,8 @@ public abstract class StringSerializer : ISerializer<string?>
 
    public static int CalculateByteLength(scoped in string? value)
    {
-      if (value is null) return sizeof(int);
-      return sizeof(int) + Encoding.UTF8.GetByteCount(value);
+      if (value is null) return VarInteger.CalculateByteLength(-1);
+      var byteCount = Encoding.UTF8.GetByteCount(value);
+      return VarInteger.CalculateByteLength(byteCount) + byteCount;
    }
 }
