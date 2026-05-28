@@ -28,8 +28,7 @@ public static class BeSerializer
       Span<byte> initialBuffer = stackalloc byte[256];
       var writer = new BufferWriter<byte>(initialBuffer);
 
-      var context = new SerializationContext();
-      SerializationContext.Current = context;
+      SerializationContext.Current = new SerializationContext();
 
       try
       {
@@ -38,8 +37,8 @@ public static class BeSerializer
       }
       finally
       {
+         SerializationContext.Current.Dispose();
          SerializationContext.Current = default;
-         context.Dispose();
 
          writer.Dispose();
       }
@@ -57,9 +56,7 @@ public static class BeSerializer
    {
       var writer = new BufferWriter<byte>(destination);
 
-      var context = new SerializationContext();
-
-      SerializationContext.Current = context;
+      SerializationContext.Current = new SerializationContext();
       try
       {
          SerializerRegistry<T>.GetWrite()(ref writer, value);
@@ -67,8 +64,8 @@ public static class BeSerializer
       }
       finally
       {
+         SerializationContext.Current.Dispose();
          SerializationContext.Current = default;
-         context.Dispose();
 
          writer.Dispose();
       }
@@ -84,8 +81,7 @@ public static class BeSerializer
    [MethodImpl(MethodImplOptions.AggressiveInlining)]
    public static int Serialize<T>(scoped in T value, ref BufferWriter<byte> writer)
    {
-      var context = new SerializationContext();
-      SerializationContext.Current = context;
+      SerializationContext.Current = new SerializationContext();
 
       try
       {
@@ -93,8 +89,8 @@ public static class BeSerializer
       }
       finally
       {
+         SerializationContext.Current.Dispose();
          SerializationContext.Current = default;
-         context.Dispose();
       }
    }
 
@@ -126,8 +122,7 @@ public static class BeSerializer
    {
       var reader = new SequenceReader<byte>(sequence);
 
-      var context = new DeserializationContext();
-      DeserializationContext.Current = context;
+      DeserializationContext.Current = new DeserializationContext();
 
       try
       {
@@ -139,8 +134,8 @@ public static class BeSerializer
       }
       finally
       {
+         DeserializationContext.Current.Dispose();
          DeserializationContext.Current = default;
-         context.Dispose();
       }
    }
 
@@ -221,8 +216,7 @@ public static class BeSerializer
    {
       var reader = new SequenceReader<byte>(sequence);
 
-      var context = new DeserializationContext();
-      DeserializationContext.Current = context;
+      DeserializationContext.Current = new DeserializationContext();
 
       try
       {
@@ -230,8 +224,8 @@ public static class BeSerializer
       }
       finally
       {
+         DeserializationContext.Current.Dispose();
          DeserializationContext.Current = default;
-         context.Dispose();
       }
    }
 

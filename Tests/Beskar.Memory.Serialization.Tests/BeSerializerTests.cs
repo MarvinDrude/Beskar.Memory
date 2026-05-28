@@ -190,6 +190,44 @@ public class BeSerializerTests
       Assert.Equal("Node 2", deserialized.Next.Name);
       Assert.Same(deserialized, deserialized.Next.Next); // Cycle is preserved!
    }
+
+   [Fact]
+   public void TestLargeCyclicReference()
+   {
+      SerializerRegistry<CyclicNode>.Register<CyclicNodeSerializer>();
+      SerializerRegistry<CyclicNode?>.Register<CyclicNodeSerializer>();
+
+      // Create a cyclic chain of 20 nodes to exceed the 16-element limit and trigger dictionary fallback
+      var count = 20;
+      var nodes = new CyclicNode[count];
+      for (var i = 0; i < count; i++)
+      {
+         nodes[i] = new CyclicNode { Name = $"Node {i}" };
+      }
+
+      for (var i = 0; i < count; i++)
+      {
+         nodes[i].Next = nodes[(i + 1) % count]; // Cycle!
+      }
+
+      var bytes = BeSerializer.Serialize(nodes[0]);
+      Assert.NotNull(bytes);
+
+      var deserialized = BeSerializer.Deserialize<CyclicNode>(bytes);
+      Assert.NotNull(deserialized);
+
+      // Verify the full cycle is preserved correctly via reference equality in dictionary fallback
+      var current = deserialized;
+      var seen = new global::System.Collections.Generic.HashSet<CyclicNode>();
+      for (var i = 0; i < count; i++)
+      {
+         Assert.NotNull(current);
+         Assert.Equal($"Node {i}", current.Name);
+         Assert.True(seen.Add(current));
+         current = current.Next;
+      }
+      Assert.Same(deserialized, current); // Cycles back to start!
+   }
 }
 
 public class CyclicNode

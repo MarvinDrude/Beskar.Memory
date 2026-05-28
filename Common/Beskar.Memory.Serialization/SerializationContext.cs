@@ -7,19 +7,24 @@ namespace Beskar.Memory.Serialization;
 /// <summary>
 /// Provides a lightweight, allocation-free context for tracking object references during serialization.
 /// </summary>
-public struct SerializationContext() : IDisposable
+public struct SerializationContext : IDisposable
 {
    [ThreadStatic]
    private static SerializationContext _current;
    public static ref SerializationContext Current => ref _current;
 
-   private object?[]? _references = ArrayPool<object?>.Shared.Rent(16);
-   private int[]? _ids = ArrayPool<int>.Shared.Rent(16);
-
-   private int _count = 0;
+   private object?[]? _references;
+   private int[]? _ids;
+   private Dictionary<object, int>? _dict;
+   private int _count;
 
    public bool TryGetReferenceId(object obj, out int referenceId)
    {
+      if (_dict != null)
+      {
+         return _dict.TryGetValue(obj, out referenceId);
+      }
+
       if (_references == null || _ids == null)
       {
          referenceId = 0;
@@ -41,110 +46,49 @@ public struct SerializationContext() : IDisposable
 
    public int Register(object obj)
    {
+      if (_dict != null)
+      {
+         var id = _count + 1;
+         _dict[obj] = id;
+         _count++;
+
+         return id;
+      }
+
       if (_references == null || _ids == null)
       {
          _references = ArrayPool<object?>.Shared.Rent(16);
          _ids = ArrayPool<int>.Shared.Rent(16);
+         _count = 0;
       }
 
-      if (_count == _references.Length)
+      if (_count >= 16)
       {
-         var newReferences = ArrayPool<object?>.Shared.Rent(_count * 2);
-         var newIds = ArrayPool<int>.Shared.Rent(_count * 2);
-
-         Array.Copy(_references, newReferences, _count);
-         Array.Copy(_ids, newIds, _count);
-
-         ArrayPool<object?>.Shared.Return(_references, clearArray: true);
-         ArrayPool<int>.Shared.Return(_ids);
-
-         _references = newReferences;
-         _ids = newIds;
-      }
-
-      var id = _count + 1;
-
-      _references[_count] = obj;
-      _ids[_count] = id;
-
-      _count++;
-      return id;
-   }
-
-   public void Dispose()
-   {
-      if (_references != null)
-      {
-         ArrayPool<object?>.Shared.Return(_references, clearArray: true);
-         _references = null;
-      }
-
-      if (_ids != null)
-      {
-         ArrayPool<int>.Shared.Return(_ids);
-         _ids = null;
-      }
-
-      _count = 0;
-   }
-}
-
-/// <summary>
-/// Provides a lightweight, allocation-free context for tracking object references during deserialization.
-/// </summary>
-public struct DeserializationContext() : IDisposable
-{
-   [ThreadStatic]
-   private static DeserializationContext _current;
-   public static ref DeserializationContext Current => ref _current;
-
-   private object?[]? _references = ArrayPool<object?>.Shared.Rent(16);
-   private int[]? _ids = ArrayPool<int>.Shared.Rent(16);
-
-   private int _count = 0;
-
-   public void Register(int id, object obj)
-   {
-      if (_references == null || _ids == null)
-      {
-         _references = ArrayPool<object?>.Shared.Rent(16);
-         _ids = ArrayPool<int>.Shared.Rent(16);
-      }
-
-      if (_count == _references.Length)
-      {
-         var newReferences = ArrayPool<object?>.Shared.Rent(_count * 2);
-         var newIds = ArrayPool<int>.Shared.Rent(_count * 2);
-
-         Array.Copy(_references, newReferences, _count);
-         Array.Copy(_ids, newIds, _count);
-
-         ArrayPool<object?>.Shared.Return(_references, clearArray: true);
-         ArrayPool<int>.Shared.Return(_ids);
-
-         _references = newReferences;
-         _ids = newIds;
-      }
-
-      _references[_count] = obj;
-      _ids[_count] = id;
-      _count++;
-   }
-
-   public object GetByReferenceId(int referenceId)
-   {
-      if (_references != null && _ids != null)
-      {
+         _dict = new Dictionary<object, int>(16, ReferenceEqualityComparer.Instance);
          for (var i = 0; i < _count; i++)
          {
-            if (_ids[i] == referenceId)
-            {
-               return _references[i]!;
-            }
+            _dict[_references[i]!] = _ids[i];
          }
+
+         ArrayPool<object?>.Shared.Return(_references, clearArray: true);
+         ArrayPool<int>.Shared.Return(_ids);
+
+         _references = null;
+         _ids = null;
+
+         var id = _count + 1;
+         _dict[obj] = id;
+         _count++;
+
+         return id;
       }
 
-      throw new InvalidOperationException($"Reference ID {referenceId} not found in context.");
+      var newId = _count + 1;
+      _references[_count] = obj;
+      _ids[_count] = newId;
+
+      _count++;
+      return newId;
    }
 
    public void Dispose()
@@ -161,6 +105,7 @@ public struct DeserializationContext() : IDisposable
          _ids = null;
       }
 
+      _dict = null;
       _count = 0;
    }
 }
