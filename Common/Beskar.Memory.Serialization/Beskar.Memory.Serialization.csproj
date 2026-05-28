@@ -29,10 +29,10 @@
 
    <ItemGroup>
       <ProjectReference
-         Include="..\..\Generators\Beskar.Memory.Code.TypeIdGenerator.Generator\Beskar.Memory.Code.TypeIdGenerator.Generator.csproj"
+         Include="..\..\Generators\Beskar.Memory.Serialization.Generator\Beskar.Memory.Serialization.Generator.csproj"
          ReferenceOutputAssembly="false" />
 
-      <None Include="..\..\Generators\Beskar.Memory.Code.TypeIdGenerator.Generator\bin\$(Configuration)\net10.0\Beskar.Memory.Code.TypeIdGenerator.Generator.dll"
+      <None Include="..\..\Generators\Beskar.Memory.Serialization.Generator\bin\$(Configuration)\net10.0\Beskar.Memory.Serialization.Generator.dll"
             Pack="true"
             PackagePath="analyzers/dotnet/cs"
             Visible="false" />

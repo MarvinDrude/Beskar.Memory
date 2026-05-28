@@ -8,7 +8,7 @@ namespace Beskar.Memory.Code.PacketGenerator.Generator;
 public sealed partial class PacketGenerator : IIncrementalGenerator
 {
    public const string GeneratorName = "PacketGenerator";
-   public const string GeneratorVersion = "1.5.2";
+   public const string GeneratorVersion = "1.5.3";
 
    public void Initialize(IncrementalGeneratorInitializationContext context)
    {
