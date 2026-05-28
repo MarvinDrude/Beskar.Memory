@@ -7,6 +7,25 @@ Console.WriteLine("Hello, World!");
 return;
 
 [BeskarObject]
+[BeskarUnion(1, typeof(UnionStructA))]
+[BeskarUnion(2, typeof(UnionStructB))]
+public partial interface IUnionStruct { }
+
+[BeskarObject]
+public partial struct UnionStructA : IUnionStruct
+{
+   [BeskarOrder(0)]
+   public int Value { get; set; }
+}
+
+[BeskarObject]
+public partial struct UnionStructB : IUnionStruct
+{
+   [BeskarOrder(0)]
+   public string Text { get; set; }
+}
+
+[BeskarObject]
 public partial class SimpleClass
 {
    [BeskarOrder(0)]

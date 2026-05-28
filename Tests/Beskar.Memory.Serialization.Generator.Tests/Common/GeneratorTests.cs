@@ -65,6 +65,15 @@ public sealed class GeneratorTests
       Assert.Contains("if (refTag == 1)", unionSource);
       Assert.Contains("SerializerRegistry<global::TestNamespace.UnionBase?>.Register<UnionBaseSerializer>();", unionSource);
 
+      var interfaceUnionTree = result.GeneratedSyntaxTrees.FirstOrDefault(t => t.FilePath.EndsWith("IUnionStruct.g.cs"));
+      Assert.NotNull(interfaceUnionTree);
+      var interfaceUnionSource = interfaceUnionTree.ToString();
+      Assert.Contains("if (value is global::TestNamespace.UnionStructA child1)", interfaceUnionSource);
+      Assert.Contains("if (value is global::TestNamespace.UnionStructB child2)", interfaceUnionSource);
+      Assert.Contains("if (refTag == 1)", interfaceUnionSource);
+      Assert.Contains("if (refTag == 2)", interfaceUnionSource);
+      Assert.Contains("SerializerRegistry<global::TestNamespace.IUnionStruct?>.Register<IUnionStructSerializer>();", interfaceUnionSource);
+
       var nonPolyChildTree = result.GeneratedSyntaxTrees.FirstOrDefault(t => t.FilePath.EndsWith("NonPolyChild.g.cs"));
       Assert.NotNull(nonPolyChildTree);
       var nonPolyChildSource = nonPolyChildTree.ToString();
