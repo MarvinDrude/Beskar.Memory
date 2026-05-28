@@ -6,7 +6,7 @@
       <Nullable>enable</Nullable>
       <IsPackable>false</IsPackable>
       <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-      <RootNamespace>Beskar.Memory.Code.TypeIdGenerator.Generator</RootNamespace>
+      <RootNamespace>Beskar.Memory.Serialization.Generator</RootNamespace>
       <EnforceExtendedAnalyzerRules>true</EnforceExtendedAnalyzerRules>
    </PropertyGroup>
 
