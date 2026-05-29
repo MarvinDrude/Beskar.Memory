@@ -1,8 +1,9 @@
-﻿using Beskar.Memory.Code.Common.Archetypes;
+using Beskar.Memory.Code.Common.Archetypes;
 using Beskar.Memory.Code.Rendering;
 using Beskar.Memory.Code.PacketGenerator.Generator.Models;
 using Beskar.Memory.Code;
 using Beskar.Memory.Collections;
+using Beskar.Memory.Code.Models.Symbols.Archetypes;
 using Microsoft.CodeAnalysis;
 
 namespace Beskar.Memory.Code.PacketGenerator.Generator.Rendering;
@@ -140,7 +141,7 @@ public sealed class PacketRegistryRenderer(SourceProductionContext ctx)
       {
          if (_indexLookup.Contains(spec.OriginalIndex))
          {
-            writer.WriteLineInterpolated($"new {spec.Spec.NamedTypeArchetype.Symbol.Name}HandlerCollection(this),");
+            writer.WriteLineInterpolated($"new {GetHandlerCollectionClassName(spec.Spec.NamedTypeArchetype)}(this),");
          }
          else
          {
@@ -183,7 +184,7 @@ public sealed class PacketRegistryRenderer(SourceProductionContext ctx)
          }
 
          writer.WriteLineInterpolated(
-            $"file sealed class {arch.Symbol.Name}HandlerCollection({registry.Symbol.Name} registry)");
+            $"file sealed class {GetHandlerCollectionClassName(arch)}({registry.Symbol.Name} registry)");
          writer.UpIndent();
 
          writer.WriteLineInterpolated($": BasePacketHandlerCollection<{stateType}, {arch.Symbol.FullName}>(registry);");
@@ -212,5 +213,29 @@ public sealed class PacketRegistryRenderer(SourceProductionContext ctx)
    {
       return packets.Select((spec, index) => (spec, index))
          .OrderBy(x => x.spec.NamedTypeArchetype.Symbol.FullName);
+   }
+
+   private static string GetHandlerCollectionClassName(NamedTypeSymbolArchetype archetype)
+   {
+      if (archetype.NamedType.Arity == 0)
+      {
+         return $"{archetype.Symbol.Name}HandlerCollection";
+      }
+
+      var clean = archetype.Symbol.FullName;
+      if (clean.StartsWith("global::"))
+         clean = clean[8..];
+
+      clean = clean.Replace(":", "_")
+         .Replace(".", "_")
+         .Replace("<", "_")
+         .Replace(">", "_")
+         .Replace("[", "_")
+         .Replace("]", "_")
+         .Replace("?", "_")
+         .Replace(" ", "")
+         .Replace(",", "_");
+
+      return $"{clean}HandlerCollection";
    }
 }

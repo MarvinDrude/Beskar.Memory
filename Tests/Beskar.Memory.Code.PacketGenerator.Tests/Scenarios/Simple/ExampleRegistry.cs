@@ -1,4 +1,4 @@
-﻿using System.Buffers;
+using System.Buffers;
 using System.Diagnostics.CodeAnalysis;
 using System.Threading;
 using System.Threading.Tasks;
@@ -42,9 +42,22 @@ public sealed partial class ExampleTwoRegistry : BasePacketRegistry<object>
    }
 }
 
-
 [Packet(typeof(ExampleRegistry))]
 public sealed class PingPacket : IPacket
 {
    public required string Name { get; set; }
+}
+
+public interface IClusterPacketPayload { }
+
+public readonly struct ClusterPacket<TPacket> : IPacket
+   where TPacket : IClusterPacketPayload
+{
+   public required TPacket Payload { get; init; }
+}
+
+[Packet(typeof(ExampleRegistry), Wrapper = typeof(ClusterPacket<>))]
+public struct WrappedPingPayload : IClusterPacketPayload
+{
+   public required string Value { get; set; }
 }

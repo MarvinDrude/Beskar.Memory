@@ -1,4 +1,4 @@
-﻿using Beskar.Memory.Code.Common;
+using Beskar.Memory.Code.Common;
 using Beskar.Memory.Code.Common.Symbols;
 using Beskar.Memory.Code.Diagnostics;
 using Beskar.Memory.Code.Models.Diagnostics;
@@ -27,7 +27,20 @@ public sealed partial class PacketGenerator
       
       ct.ThrowIfCancellationRequested();
       using var builder = DiagnosticBuilder<PacketSpec>.Create(8);
-      var namedType = symbol.CreateNamedArchetype(CreateTransformOptions());
+
+      ITypeSymbol actualPacketSymbol = symbol;
+      var wrapperArg = attribute.NamedArguments.FirstOrDefault(x => x.Key == "Wrapper");
+      if (wrapperArg.Value.Value is INamedTypeSymbol wrapperOpenGeneric)
+      {
+         actualPacketSymbol = wrapperOpenGeneric.OriginalDefinition.Construct(symbol);
+      }
+
+      if (actualPacketSymbol is not INamedTypeSymbol namedPacketSymbol)
+      {
+         return builder.Add(InvalidTargetDiagnosticId).Build();
+      }
+
+      var namedType = namedPacketSymbol.CreateNamedArchetype(CreateTransformOptions());
 
       if (namedType.Type.AllInterfaces.Array.FirstOrDefault(
             x => x.Symbol is
