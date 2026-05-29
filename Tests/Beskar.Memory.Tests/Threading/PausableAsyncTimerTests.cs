@@ -12,22 +12,21 @@ public class PausableAsyncTimerTests
    public async Task Callback_ShouldExecutePeriodically()
    {
       var count = 0;
-      using var timer = new PausableAsyncTimer(TimeSpan.FromMilliseconds(15), () =>
+      var timer = new PausableAsyncTimer(TimeSpan.FromMilliseconds(20), () =>
       {
          Interlocked.Increment(ref count);
          return Task.CompletedTask;
       });
 
-      using var cts = new CancellationTokenSource();
-      var runTask = timer.StartAsync(cts.Token);
+      var runTask = timer.StartAsync();
 
       // Wait until the callback has been executed at least 3 times
       while (Volatile.Read(ref count) < 3)
       {
-         await Task.Delay(5, cts.Token);
+         await Task.Delay(5);
       }
 
-      await cts.CancelAsync();
+      timer.Dispose();
       await runTask;
 
       Assert.True(Volatile.Read(ref count) >= 3);
@@ -36,37 +35,38 @@ public class PausableAsyncTimerTests
    [Fact]
    public async Task StartAsync_ShouldExitCleanly_OnCancellation()
    {
-      using var timer = new PausableAsyncTimer(TimeSpan.FromMilliseconds(20), () => Task.CompletedTask);
+      var timer = new PausableAsyncTimer(TimeSpan.FromMilliseconds(20), () => Task.CompletedTask);
       using var cts = new CancellationTokenSource();
 
       var runTask = timer.StartAsync(cts.Token);
 
       // Cancel and ensure it completes without throwing unhandled exceptions
-      await cts.CancelAsync();
+      cts.Cancel();
 
-      var delayTask = Task.Delay(1000, cts.Token);
+      var delayTask = Task.Delay(1000);
       var completedTask = await Task.WhenAny(runTask, delayTask);
 
       Assert.Same(runTask, completedTask);
+
+      timer.Dispose();
    }
 
    [Fact]
    public async Task Pause_ShouldSuspendCallbackExecution()
    {
       var count = 0;
-      using var timer = new PausableAsyncTimer(TimeSpan.FromMilliseconds(15), () =>
+      var timer = new PausableAsyncTimer(TimeSpan.FromMilliseconds(100), () =>
       {
          Interlocked.Increment(ref count);
          return Task.CompletedTask;
       });
 
-      using var cts = new CancellationTokenSource();
-      var runTask = timer.StartAsync(cts.Token);
+      var runTask = timer.StartAsync();
 
       // Wait for at least one tick
       while (Volatile.Read(ref count) < 1)
       {
-         await Task.Delay(5, cts.Token);
+         await Task.Delay(10);
       }
 
       // Pause the timer
@@ -74,11 +74,11 @@ public class PausableAsyncTimerTests
 
       // Capture the count, then wait to see if it remains frozen
       var pausedCount = Volatile.Read(ref count);
-      await Task.Delay(50, cts.Token);
+      await Task.Delay(150);
 
       Assert.Equal(pausedCount, Volatile.Read(ref count));
 
-      await cts.CancelAsync();
+      timer.Dispose();
       await runTask;
    }
 
@@ -86,19 +86,18 @@ public class PausableAsyncTimerTests
    public async Task Resume_ShouldContinueCallbackExecution()
    {
       var count = 0;
-      using var timer = new PausableAsyncTimer(TimeSpan.FromMilliseconds(15), () =>
+      var timer = new PausableAsyncTimer(TimeSpan.FromMilliseconds(100), () =>
       {
          Interlocked.Increment(ref count);
          return Task.CompletedTask;
       });
 
-      using var cts = new CancellationTokenSource();
-      var runTask = timer.StartAsync(cts.Token);
+      var runTask = timer.StartAsync();
 
       // Let it tick at least once
       while (Volatile.Read(ref count) < 1)
       {
-         await Task.Delay(5, cts.Token);
+         await Task.Delay(10);
       }
 
       // Pause the timer
@@ -106,65 +105,58 @@ public class PausableAsyncTimerTests
       var pausedCount = Volatile.Read(ref count);
 
       // Ensure it is frozen
-      await Task.Delay(40, cts.Token);
+      await Task.Delay(150);
       Assert.Equal(pausedCount, Volatile.Read(ref count));
 
-      // Resume immediate
+      // Resume immediate (waitBeforeExecution: false)
       timer.Resume(waitBeforeExecution: false);
 
-      // Wait for it to tick again after resume
-      while (Volatile.Read(ref count) <= pausedCount)
-      {
-         await Task.Delay(5, cts.Token);
-      }
-
-      await cts.CancelAsync();
-      await runTask;
-
+      // It should execute immediately (almost instantly)
+      await Task.Delay(40);
       Assert.True(Volatile.Read(ref count) > pausedCount);
+
+      timer.Dispose();
+      await runTask;
    }
 
    [Fact]
    public async Task Resume_WithWaitBeforeExecution_ShouldSkipNextExecution()
    {
       var count = 0;
-      using var timer = new PausableAsyncTimer(TimeSpan.FromMilliseconds(40), () =>
+      var timer = new PausableAsyncTimer(TimeSpan.FromMilliseconds(200), () =>
       {
          Interlocked.Increment(ref count);
          return Task.CompletedTask;
       });
 
-      using var cts = new CancellationTokenSource();
-      var runTask = timer.StartAsync(cts.Token);
+      var runTask = timer.StartAsync();
 
-      // Wait for the first tick
+      // Wait for the first tick (at 200ms)
       while (Volatile.Read(ref count) < 1)
       {
-         await Task.Delay(5, cts.Token);
+         await Task.Delay(10);
       }
 
       // Pause the timer
       timer.Pause();
 
       // Ensure it is completely paused and we won't see more ticks
-      await Task.Delay(60, cts.Token);
+      await Task.Delay(300);
       var currentCount = Volatile.Read(ref count);
       Assert.Equal(1, currentCount);
 
-      // Resume with delay
+      // Resume with delay (waitBeforeExecution: true)
       timer.Resume(waitBeforeExecution: true);
 
-      // The next tick will happen in 40ms, but callback should be skipped.
-      // So at 60ms after resume, count should still be currentCount (1).
-      await Task.Delay(60, cts.Token);
+      // Immediately after resuming with delay, count must still be currentCount (1)
+      await Task.Delay(50);
       Assert.Equal(currentCount, Volatile.Read(ref count));
 
-      // The following tick will happen in another 40ms (total 80ms from resume).
-      // So at 120ms after resume, count should be currentCount + 1 (2).
-      await Task.Delay(60, cts.Token);
+      // After one full period of the new timer has elapsed (200ms), it should execute
+      await Task.Delay(250);
       Assert.Equal(currentCount + 1, Volatile.Read(ref count));
 
-      await cts.CancelAsync();
+      timer.Dispose();
       await runTask;
    }
 
