@@ -9,7 +9,8 @@ public sealed class PausableAsyncTimer : IDisposable
    private TaskCompletionSource _pauseTcs;
 
    private readonly Func<Task> _callback;
-   private readonly TimeSpan _interval;
+   private long _intervalTicks;
+   private long _tickCount;
 
    // State: 0 = Running, 1 = Paused
    private int _isPausedState;
@@ -18,10 +19,36 @@ public sealed class PausableAsyncTimer : IDisposable
    // State: 0 = Active, 1 = Disposed
    private int _isDisposed;
 
+   /// <summary>
+   /// Gets the number of ticks that have elapsed since the timer was started.
+   /// (Does not reset on pause.)
+   /// </summary>
+   public long TickCount => Interlocked.Read(ref _tickCount);
+
+   /// <summary>
+   /// Gets a value indicating whether the timer is currently paused.
+   /// </summary>
+   public bool IsPaused => Volatile.Read(ref _isPausedState) == 1;
+
+   /// <summary>
+   /// Gets a value indicating whether the timer is currently running.
+   /// </summary>
+   public bool IsRunning => Volatile.Read(ref _isPausedState) == 0;
+
+   /// <summary>
+   /// Gets a value indicating whether the timer has been disposed.
+   /// </summary>
+   public bool IsDisposed => Volatile.Read(ref _isDisposed) == 1;
+
+   /// <summary>
+   /// Gets the current interval of the timer.
+   /// </summary>
+   public TimeSpan CurrentInterval => TimeSpan.FromTicks(Volatile.Read(ref _intervalTicks));
+
    public PausableAsyncTimer(TimeSpan period, Func<Task> callback)
    {
       _callback = callback;
-      _interval = period;
+      _intervalTicks = period.Ticks;
 
       _timer = new PeriodicTimer(period);
       _pauseTcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
@@ -45,7 +72,7 @@ public sealed class PausableAsyncTimer : IDisposable
 
                _timer.Dispose(); // prevent timer wrap around
                if (Volatile.Read(ref _isDisposed) == 1) return;
-               _timer = new PeriodicTimer(_interval);
+               _timer = new PeriodicTimer(TimeSpan.FromTicks(Volatile.Read(ref _intervalTicks)));
             }
 
             if (Interlocked.CompareExchange(ref _delayNextExecution, 0, 1) == 1)
@@ -61,6 +88,7 @@ public sealed class PausableAsyncTimer : IDisposable
             }
 
             await _callback().ConfigureAwait(false);
+            Interlocked.Increment(ref _tickCount);
          }
       }
       catch (OperationCanceledException)
@@ -106,6 +134,25 @@ public sealed class PausableAsyncTimer : IDisposable
       if (Volatile.Read(ref _isDisposed) == 1)
       {
          newTcs.TrySetCanceled();
+      }
+   }
+
+   /// <summary>
+   /// Updates the interval of the timer.
+   /// </summary>
+   public void UpdateInterval(TimeSpan newInterval)
+   {
+      if (Volatile.Read(ref _isDisposed) == 1) return;
+      Interlocked.Exchange(ref _intervalTicks, newInterval.Ticks);
+
+      try
+      {
+         var currentTimer = _timer;
+         currentTimer.Period = newInterval;
+      }
+      catch (ObjectDisposedException)
+      {
+         // race condition, ignore
       }
    }
 
