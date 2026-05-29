@@ -131,3 +131,13 @@ public class CyclicNode
    [BeskarOrder(1)]
    public CyclicNode? Next { get; set; }
 }
+
+[BeskarObject]
+public partial class NullableRefTypesClass
+{
+   [BeskarOrder(0)]
+   public string NonNullableAddress { get; set; } = string.Empty;
+
+   [BeskarOrder(1)]
+   public string? NullableToken { get; set; }
+}

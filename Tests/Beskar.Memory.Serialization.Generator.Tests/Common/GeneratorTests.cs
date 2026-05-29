@@ -116,5 +116,16 @@ public sealed class GeneratorTests
       Assert.Contains("value.Next = member_Next;", cyclicNodeSource);
       Assert.Contains("context.IncrementDepth();", cyclicNodeSource);
       Assert.Contains("context.DecrementDepth();", cyclicNodeSource);
+
+      var nullableRefTypesTree = result.GeneratedSyntaxTrees.FirstOrDefault(t => t.FilePath.EndsWith("NullableRefTypesClass.g.cs"));
+      Assert.NotNull(nullableRefTypesTree);
+      var nullableRefTypesSource = nullableRefTypesTree.ToString();
+      Assert.Contains("public sealed class NullableRefTypesClassSerializer : ISerializer<global::TestNamespace.NullableRefTypesClass?>", nullableRefTypesSource);
+      Assert.Contains("SerializerRegistry<string>.GetWrite()(ref writer, value.NonNullableAddress);", nullableRefTypesSource);
+      Assert.Contains("SerializerRegistry<string?>.GetWrite()(ref writer, value.NullableToken);", nullableRefTypesSource);
+      Assert.Contains("SerializerRegistry<string>.GetTryRead()(ref reader, out var member_NonNullableAddress)", nullableRefTypesSource);
+      Assert.Contains("SerializerRegistry<string?>.GetTryRead()(ref reader, out var member_NullableToken)", nullableRefTypesSource);
+      Assert.Contains("SerializerRegistry<string>.GetCalculateByteLength()(value.NonNullableAddress)", nullableRefTypesSource);
+      Assert.Contains("SerializerRegistry<string?>.GetCalculateByteLength()(value.NullableToken)", nullableRefTypesSource);
    }
 }

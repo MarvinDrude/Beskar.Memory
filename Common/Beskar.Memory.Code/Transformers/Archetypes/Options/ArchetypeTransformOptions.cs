@@ -1,4 +1,4 @@
-﻿using System.Diagnostics.CodeAnalysis;
+using System.Diagnostics.CodeAnalysis;
 using Beskar.Memory.Code.Interfaces.Specs;
 using Beskar.Memory.Code.Transformers.Symbols.Options;
 using Beskar.Memory.Collections;
@@ -146,7 +146,7 @@ public sealed class ArchetypeTransformOptions
       var type = typeof(T);
       if (!_symbolCaches.TryGetValue(type, out var cache))
       {
-         cache = new Dictionary<ISymbol, T>(SymbolEqualityComparer.Default);
+         cache = new Dictionary<ISymbol, T>(SymbolEqualityComparer.IncludeNullability);
          _symbolCaches[type] = cache;
       }
       
