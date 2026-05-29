@@ -218,7 +218,7 @@ public class PausableAsyncTimerTests
       Assert.Same(runTask, completedTask);
    }
 
-   [Fact]
+    [Fact]
    public void Idempotency_And_ConcurrentOperations()
    {
       var timer = new PausableAsyncTimer(TimeSpan.FromMilliseconds(50), () => Task.CompletedTask);
@@ -234,5 +234,132 @@ public class PausableAsyncTimerTests
       // Multiple consecutive Dispose calls
       timer.Dispose();
       timer.Dispose();
+   }
+
+   [Fact]
+   public async Task TickCount_ShouldIncrementOnSuccessfulCallback()
+   {
+      var count = 0;
+      var timer = new PausableAsyncTimer(TimeSpan.FromMilliseconds(15), () =>
+      {
+         Interlocked.Increment(ref count);
+         return Task.CompletedTask;
+      });
+
+      var runTask = timer.StartAsync();
+
+      // Wait for 3 successful callbacks
+      while (timer.TickCount < 3)
+      {
+         await Task.Delay(5);
+      }
+
+      var tickCount = timer.TickCount;
+      timer.Dispose();
+      await runTask;
+
+      Assert.True(tickCount >= 3);
+      Assert.Equal(count, tickCount);
+   }
+
+   [Fact]
+   public async Task IsPaused_And_IsRunning_ShouldReflectStateCorrectly()
+   {
+      using var timer = new PausableAsyncTimer(TimeSpan.FromMilliseconds(50), () => Task.CompletedTask);
+
+      // Initial state
+      Assert.True(timer.IsRunning);
+      Assert.False(timer.IsPaused);
+
+      // Pause
+      timer.Pause();
+      Assert.False(timer.IsRunning);
+      Assert.True(timer.IsPaused);
+
+      // Resume
+      timer.Resume();
+      Assert.True(timer.IsRunning);
+      Assert.False(timer.IsPaused);
+   }
+
+   [Fact]
+   public void IsDisposed_ShouldReflectDisposalCorrectly()
+   {
+      var timer = new PausableAsyncTimer(TimeSpan.FromMilliseconds(50), () => Task.CompletedTask);
+      Assert.False(timer.IsDisposed);
+
+      timer.Dispose();
+      Assert.True(timer.IsDisposed);
+   }
+
+   [Fact]
+   public void CurrentInterval_ShouldReflectUpdate()
+   {
+      var originalInterval = TimeSpan.FromMilliseconds(100);
+      using var timer = new PausableAsyncTimer(originalInterval, () => Task.CompletedTask);
+      Assert.Equal(originalInterval, timer.CurrentInterval);
+
+      var newInterval = TimeSpan.FromMilliseconds(50);
+      timer.UpdateInterval(newInterval);
+      Assert.Equal(newInterval, timer.CurrentInterval);
+   }
+
+   [Fact]
+   public async Task UpdateInterval_ShouldModifyTimerPeriod_WhenRunning()
+   {
+      var count = 0;
+      var timer = new PausableAsyncTimer(TimeSpan.FromMilliseconds(400), () =>
+      {
+         Interlocked.Increment(ref count);
+         return Task.CompletedTask;
+      });
+
+      var runTask = timer.StartAsync();
+
+      // Update to a much shorter interval
+      timer.UpdateInterval(TimeSpan.FromMilliseconds(20));
+
+      // Wait and verify that it ticks very rapidly under the new 20ms interval
+      await Task.Delay(100);
+
+      var ticks = Volatile.Read(ref count);
+      timer.Dispose();
+      await runTask;
+
+      // With 400ms it would not have ticked at all within 100ms.
+      // Under 20ms interval, it should tick around 4-5 times in 100ms.
+      Assert.True(ticks >= 2);
+   }
+
+   [Fact]
+   public async Task UpdateInterval_ShouldModifyTimerPeriod_WhenPaused()
+   {
+      var count = 0;
+      var timer = new PausableAsyncTimer(TimeSpan.FromMilliseconds(400), () =>
+      {
+         Interlocked.Increment(ref count);
+         return Task.CompletedTask;
+      });
+
+      var runTask = timer.StartAsync();
+
+      // Pause it immediately
+      timer.Pause();
+      await Task.Delay(50); // let it fully transition to pause
+
+      // Update interval while paused
+      timer.UpdateInterval(TimeSpan.FromMilliseconds(20));
+
+      // Resume immediately without delaying
+      timer.Resume(waitBeforeExecution: false);
+
+      // Verify that it ticks according to the new 20ms interval
+      await Task.Delay(100);
+
+      var ticks = Volatile.Read(ref count);
+      timer.Dispose();
+      await runTask;
+
+      Assert.True(ticks >= 2);
    }
 }
