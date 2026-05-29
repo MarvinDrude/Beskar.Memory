@@ -1,4 +1,4 @@
-﻿using System.Buffers;
+using System.Buffers;
 using System.Diagnostics.CodeAnalysis;
 using System.Threading;
 using System.Threading.Tasks;
@@ -30,7 +30,7 @@ public sealed partial class StatefulRegistry : BasePacketRegistry<ClientState>
       throw new System.NotImplementedException();
    }
 
-   public override void Serialize<T>(ref BufferWriter<byte> writer, T packet)
+   public override void Serialize<T>(ref BufferWriter<byte> writer, scoped in T packet)
    {
       throw new System.NotImplementedException();
    }

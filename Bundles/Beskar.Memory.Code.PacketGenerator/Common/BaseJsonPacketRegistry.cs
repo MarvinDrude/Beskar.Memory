@@ -1,4 +1,4 @@
-﻿using System.Buffers;
+using System.Buffers;
 using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
 using System.Text.Json.Serialization;
@@ -45,7 +45,7 @@ public abstract class BaseJsonPacketRegistry<TState>(
       }
    }
 
-   public override void Serialize<T>(ref BufferWriter<byte> writer, T packet)
+   public override void Serialize<T>(ref BufferWriter<byte> writer, scoped in T packet)
    {
       var typeInfo = _context?.GetTypeInfo(typeof(T)) as JsonTypeInfo<T>;
       var arrayWriter = new ArrayBufferWriter<byte>(1024); // double heap is ok for now

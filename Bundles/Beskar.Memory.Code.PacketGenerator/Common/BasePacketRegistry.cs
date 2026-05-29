@@ -1,4 +1,4 @@
-﻿using System.Buffers;
+using System.Buffers;
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
 using Beskar.Memory.Code.PacketGenerator.Interfaces;
@@ -23,11 +23,11 @@ public abstract class BasePacketRegistry<TState>(PacketRegistryOptions? options 
       where T : IPacket;
    
    public abstract void Serialize<T>(
-      ref BufferWriter<byte> writer, T packet)
+      ref BufferWriter<byte> writer, scoped in T packet)
       where T : IPacket;
    
    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-   public byte[] Serialize<T>(T packet)
+   public byte[] Serialize<T>(scoped in T packet)
       where T : IPacket
    {
       var writer = new BufferWriter<byte>(512);
@@ -44,7 +44,7 @@ public abstract class BasePacketRegistry<TState>(PacketRegistryOptions? options 
 
    [MethodImpl(MethodImplOptions.AggressiveInlining)]
    public void SerializeWithHeader<T>(
-      ref BufferWriter<byte> writer, T packet)
+      ref BufferWriter<byte> writer, scoped in T packet)
       where T : IPacket
    {
       var packetId = PacketMetadata<T>.Identifier;
@@ -54,7 +54,7 @@ public abstract class BasePacketRegistry<TState>(PacketRegistryOptions? options 
    }
 
    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-   public byte[] SerializeWithHeader<T>(T packet)
+   public byte[] SerializeWithHeader<T>(scoped in T packet)
       where T : IPacket
    {
       var packetId = PacketMetadata<T>.Identifier;

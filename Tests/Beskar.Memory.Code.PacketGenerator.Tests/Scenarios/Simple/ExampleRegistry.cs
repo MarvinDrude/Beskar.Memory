@@ -36,7 +36,7 @@ public sealed partial class ExampleTwoRegistry : BasePacketRegistry<object>
       throw new System.NotImplementedException();
    }
 
-   public override void Serialize<T>(ref BufferWriter<byte> writer, T packet)
+   public override void Serialize<T>(ref BufferWriter<byte> writer, scoped in T packet)
    {
       throw new System.NotImplementedException();
    }
