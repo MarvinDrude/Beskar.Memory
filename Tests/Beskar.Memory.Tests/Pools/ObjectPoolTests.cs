@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Threading.Tasks;
 using Xunit;
 using Beskar.Memory.Pools;
@@ -107,6 +107,28 @@ public class ObjectPoolTests
          Assert.NotNull(item);
          pool.Return(item);
       });
+   }
+
+   [Fact]
+   public void PoolRentalScope()
+   {
+      var options = new ObjectPoolOptions<PooledItem>
+      {
+         FactoryFunc = () => new PooledItem(),
+         InitialSize = 2,
+         MaxSize = 4
+      };
+
+      var pool = new ObjectPool<PooledItem>(options);
+
+      using (var rental = pool.Rent())
+      {
+         Assert.NotNull(rental.Value);
+      }
+
+      // Value should be returned and reusable
+      var item = pool.Get(null);
+      Assert.NotNull(item);
    }
 
    private sealed class PooledItem

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Channels;
@@ -121,6 +121,60 @@ public sealed class WorkPool : IAsyncDisposable
    }
 
    /// <summary>
+   /// Enqueues an asynchronous, cancellable task to the pool and returns a task representing its completion.
+   /// </summary>
+   /// <param name="func">The delegate representing the task to execute.</param>
+   /// <param name="ct">A token to cancel the task execution.</param>
+   /// <returns>A task representing the asynchronous completion of the work item.</returns>
+   public Task Enqueue(
+      Func<CancellationToken, Task> func,
+      CancellationToken ct = default)
+   {
+      if (!_accepting)
+      {
+         throw new InvalidOperationException("WorkPool is already completed or disposed.");
+      }
+
+      var tcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+      var item = new VoidWorkItem(func, tcs, ct);
+
+      var writeTask = _items.Writer.WriteAsync(item, ct);
+      return !writeTask.IsCompletedSuccessfully
+         ? AwaitWriteThenResult(writeTask, tcs)
+         : tcs.Task;
+
+      static async Task AwaitWriteThenResult(
+         ValueTask writeTask, TaskCompletionSource tcs)
+      {
+         await writeTask;
+         await tcs.Task;
+      }
+   }
+
+   /// <summary>
+   /// Enqueues a synchronous action to the pool and returns a task representing its completion.
+   /// </summary>
+   /// <param name="action">The action to execute.</param>
+   /// <param name="ct">A token to cancel the action execution.</param>
+   /// <returns>A task representing the asynchronous completion of the work item.</returns>
+   public Task Enqueue(
+      Action action, CancellationToken ct = default)
+   {
+      return Enqueue(cancel =>
+      {
+         if (cancel.IsCancellationRequested)
+         {
+            return Task.FromCanceled(cancel);
+         }
+
+         action();
+         return Task.CompletedTask;
+
+      }, ct);
+   }
+
+
+   /// <summary>
    /// Gracefully completes the work pool, waiting for all enqueued items to be processed.
    /// </summary>
    /// <returns>A task representing the completion of all workers.</returns>
@@ -204,4 +258,43 @@ public sealed class WorkPool : IAsyncDisposable
          }
       }
    }
+
+   private sealed class VoidWorkItem(
+      Func<CancellationToken, Task> func,
+      TaskCompletionSource tcs,
+      CancellationToken ct)
+      : WorkItemBase
+   {
+      private readonly Func<CancellationToken, Task> _func = func;
+      private readonly TaskCompletionSource _tcs = tcs;
+      private readonly CancellationToken _ct = ct;
+
+      public override async Task Execute(CancellationToken poolToken)
+      {
+         if (_ct.IsCancellationRequested)
+         {
+            _tcs.TrySetCanceled(_ct);
+            return;
+         }
+
+         try
+         {
+            using var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(poolToken, _ct);
+            var linkedToken = linkedCts.Token;
+
+            await _func(linkedToken).ConfigureAwait(false);
+            _tcs.TrySetResult();
+         }
+         catch (OperationCanceledException cancelled)
+         {
+            _tcs.TrySetCanceled(cancelled.CancellationToken.IsCancellationRequested
+               ? cancelled.CancellationToken : _ct);
+         }
+         catch (Exception ex)
+         {
+            _tcs.TrySetException(ex);
+         }
+      }
+   }
 }
+

@@ -254,10 +254,10 @@ public class PausableAsyncTimerTests
          await Task.Delay(5);
       }
 
-      var tickCount = timer.TickCount;
       timer.Dispose();
       await runTask;
 
+      var tickCount = timer.TickCount;
       Assert.True(tickCount >= 3);
       Assert.Equal(count, tickCount);
    }

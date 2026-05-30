@@ -1,6 +1,8 @@
-﻿using System;
+using System;
 using System.Collections.Concurrent;
+using System.Runtime.CompilerServices;
 using System.Threading;
+
 
 namespace Beskar.Memory.Pools;
 
@@ -101,5 +103,16 @@ public class ObjectPool<T>
       }
 
       return true;
+   }
+
+   /// <summary>
+   /// Rents an object from the pool wrapped in a safe, zero-allocation <see cref="PoolRental{T}"/> scope.
+   /// </summary>
+   /// <param name="factoryFunc">An optional custom factory delegate to invoke if the pool is empty.</param>
+   /// <returns>A safe rental scope wrapping the rented object.</returns>
+   [MethodImpl(MethodImplOptions.AggressiveInlining)]
+   public PoolRental<T> Rent(Func<T>? factoryFunc = null)
+   {
+      return new PoolRental<T>(this, Get(factoryFunc));
    }
 }

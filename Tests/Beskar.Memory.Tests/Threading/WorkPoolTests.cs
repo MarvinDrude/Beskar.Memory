@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Threading;
 using System.Threading.Tasks;
 using Xunit;
@@ -119,5 +119,35 @@ public class WorkPoolTests
       catch (InvalidOperationException)
       {
       }
+   }
+
+   [Fact]
+   public async Task EnqueueNonGenericSynchronousWork()
+   {
+      await using var pool = new WorkPool(new WorkPoolOptions { MaxDegreeOfParallelism = 2 });
+      var completed = 0;
+
+      var task1 = pool.Enqueue(() => { Interlocked.Increment(ref completed); });
+      var task2 = pool.Enqueue(() => { Interlocked.Increment(ref completed); });
+
+      await Task.WhenAll(task1, task2);
+
+      Assert.Equal(2, completed);
+   }
+
+   [Fact]
+   public async Task EnqueueNonGenericAsynchronousWork()
+   {
+      await using var pool = new WorkPool(new WorkPoolOptions { MaxDegreeOfParallelism = 2 });
+      var completed = 0;
+
+      var task1 = pool.Enqueue(async ct =>
+      {
+         await Task.Delay(10, ct);
+         Interlocked.Increment(ref completed);
+      });
+
+      await task1;
+      Assert.Equal(1, completed);
    }
 }

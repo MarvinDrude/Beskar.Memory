@@ -1,6 +1,9 @@
-﻿using System;
+using System;
+using System.Threading;
+using System.Threading.Tasks;
 using Xunit;
 using Beskar.Memory.Pools;
+
 
 namespace Beskar.Memory.Tests.Pools;
 
@@ -114,13 +117,61 @@ public class DisposableObjectPoolTests
       Assert.True(item.IsDisposed);
    }
 
+   [Fact]
+   public async Task DisposablePoolConcurrentReturnAndDisposeNoLeak()
+   {
+      var options = new ObjectPoolOptions<DisposableItem>
+      {
+         FactoryFunc = () => new DisposableItem(),
+         InitialSize = 100,
+         MaxSize = 500
+      };
+
+      for (int run = 0; run < 10; run++)
+      {
+         var pool = new DisposableObjectPool<DisposableItem>(options);
+         var items = new DisposableItem[100];
+         for (int i = 0; i < items.Length; i++)
+         {
+            items[i] = pool.Get(null);
+         }
+
+         var barrier = new Barrier(2);
+
+         var returnTask = Task.Run(() =>
+         {
+            barrier.SignalAndWait();
+            foreach (var item in items)
+            {
+               pool.Return(item);
+            }
+         });
+
+         var disposeTask = Task.Run(() =>
+         {
+            barrier.SignalAndWait();
+            pool.Dispose();
+         });
+
+         await Task.WhenAll(returnTask, disposeTask);
+
+         // Assert all items must be disposed since pool is disposed
+         foreach (var item in items)
+         {
+            Assert.True(item.IsDisposed);
+         }
+      }
+   }
+
+
    private sealed class DisposableItem : IDisposable
    {
-      public bool IsDisposed { get; private set; }
+      private volatile bool _isDisposed;
+      public bool IsDisposed => _isDisposed;
 
       public void Dispose()
       {
-         IsDisposed = true;
+         _isDisposed = true;
       }
    }
 }

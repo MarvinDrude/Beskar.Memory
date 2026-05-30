@@ -1,5 +1,7 @@
-﻿using System;
+using System;
+using System.Threading;
 using System.Threading.Tasks;
+
 using Xunit;
 using Beskar.Memory.Pools;
 
@@ -138,13 +140,82 @@ public class AsyncDisposableObjectPoolTests
       Assert.True(item.IsDisposed);
    }
 
+   [Fact]
+   public async Task AsyncPoolRentalScope()
+   {
+      var options = new ObjectPoolOptions<AsyncDisposableItem>
+      {
+         FactoryFunc = () => new AsyncDisposableItem(),
+         InitialSize = 2,
+         MaxSize = 4
+      };
+
+      var pool = new AsyncDisposableObjectPool<AsyncDisposableItem>(options);
+
+      await using (var rental = pool.Rent())
+      {
+         Assert.NotNull(rental.Value);
+      }
+
+      // Value should be returned and reusable
+      var item = pool.Get(null);
+      Assert.NotNull(item);
+   }
+
+   [Fact]
+   public async Task AsyncDisposablePoolConcurrentReturnAndDisposeNoLeak()
+   {
+      var options = new ObjectPoolOptions<AsyncDisposableItem>
+      {
+         FactoryFunc = () => new AsyncDisposableItem(),
+         InitialSize = 100,
+         MaxSize = 500
+      };
+
+      for (int run = 0; run < 10; run++)
+      {
+         var pool = new AsyncDisposableObjectPool<AsyncDisposableItem>(options);
+         var items = new AsyncDisposableItem[100];
+         for (int i = 0; i < items.Length; i++)
+         {
+            items[i] = pool.Get(null);
+         }
+
+         var barrier = new Barrier(2);
+
+         var returnTask = Task.Run(async () =>
+         {
+            barrier.SignalAndWait();
+            foreach (var item in items)
+            {
+               await pool.ReturnAsync(item);
+            }
+         });
+
+         var disposeTask = Task.Run(async () =>
+         {
+            barrier.SignalAndWait();
+            await pool.DisposeAsync();
+         });
+
+         await Task.WhenAll(returnTask, disposeTask);
+
+         // Assert all items must be disposed since pool is disposed
+         foreach (var item in items)
+         {
+            Assert.True(item.IsDisposed);
+         }
+      }
+   }
+
    private sealed class AsyncDisposableItem : IAsyncDisposable
    {
-      public bool IsDisposed { get; private set; }
+      private volatile bool _isDisposed;
+      public bool IsDisposed => _isDisposed;
 
       public ValueTask DisposeAsync()
       {
-         IsDisposed = true;
+         _isDisposed = true;
          return default;
       }
    }
