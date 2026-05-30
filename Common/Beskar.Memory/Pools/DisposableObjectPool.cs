@@ -39,6 +39,7 @@ public sealed class DisposableObjectPool<T>(ObjectPoolOptions<T> options)
          if (_isDisposed)
          {
             DrainPool();
+            return false;
          }
          return true;
       }

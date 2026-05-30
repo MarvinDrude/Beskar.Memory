@@ -131,6 +131,36 @@ public class ObjectPoolTests
       Assert.NotNull(item);
    }
 
+   [Fact]
+   public void HeapPoolRentalScope()
+   {
+      var options = new ObjectPoolOptions<PooledItem>
+      {
+         FactoryFunc = () => new PooledItem(),
+         InitialSize = 2,
+         MaxSize = 4
+      };
+
+      var pool = new ObjectPool<PooledItem>(options);
+
+      HeapPoolRental<PooledItem> rentalOut;
+      using (var rental = pool.RentHeap())
+      {
+         rentalOut = rental;
+         Assert.NotNull(rental.Value);
+      }
+
+      // Value should be returned and reusable
+      var item = pool.Get(null);
+      Assert.NotNull(item);
+
+      // Accessing Value after disposal should throw ObjectDisposedException
+      Assert.Throws<ObjectDisposedException>(() => rentalOut.Value);
+
+      // Multiple disposals should be idempotent
+      rentalOut.Dispose();
+   }
+
    private sealed class PooledItem
    {
       public bool Custom { get; init; }

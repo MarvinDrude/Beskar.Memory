@@ -163,6 +163,36 @@ public class AsyncDisposableObjectPoolTests
    }
 
    [Fact]
+   public async Task AsyncHeapPoolRentalScope()
+   {
+      var options = new ObjectPoolOptions<AsyncDisposableItem>
+      {
+         FactoryFunc = () => new AsyncDisposableItem(),
+         InitialSize = 2,
+         MaxSize = 4
+      };
+
+      var pool = new AsyncDisposableObjectPool<AsyncDisposableItem>(options);
+
+      AsyncHeapPoolRental<AsyncDisposableItem> rentalOut;
+      await using (var rental = pool.RentHeap())
+      {
+         rentalOut = rental;
+         Assert.NotNull(rental.Value);
+      }
+
+      // Value should be returned and reusable
+      var item = pool.Get(null);
+      Assert.NotNull(item);
+
+      // Accessing Value after disposal should throw ObjectDisposedException
+      Assert.Throws<ObjectDisposedException>(() => rentalOut.Value);
+
+      // Multiple disposals should be idempotent
+      await rentalOut.DisposeAsync();
+   }
+
+   [Fact]
    public async Task AsyncDisposablePoolConcurrentReturnAndDisposeNoLeak()
    {
       var options = new ObjectPoolOptions<AsyncDisposableItem>

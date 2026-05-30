@@ -27,6 +27,18 @@ public sealed class AsyncDisposableObjectPool<T>(ObjectPoolOptions<T> options)
       return new AsyncPoolRental<T>(this, Get(factoryFunc));
    }
 
+   /// <summary>
+   /// Rents an object from the pool wrapped in a heap-allocated (class-based) <see cref="AsyncHeapPoolRental{T}"/> scope.
+   /// Suitable for long-lived rentals, storing in heap structures, or async methods.
+   /// </summary>
+   /// <param name="factoryFunc">An optional custom factory delegate to invoke if the pool is empty.</param>
+   /// <returns>A heap-allocated rental scope wrapping the rented object.</returns>
+   [MethodImpl(MethodImplOptions.AggressiveInlining)]
+   public new AsyncHeapPoolRental<T> RentHeap(Func<T>? factoryFunc = null)
+   {
+      return new AsyncHeapPoolRental<T>(this, Get(factoryFunc));
+   }
+
 
    /// <inheritdoc />
    public override T Get(Func<T>? factoryFunc)
