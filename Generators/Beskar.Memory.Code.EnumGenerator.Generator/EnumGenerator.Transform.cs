@@ -1,9 +1,10 @@
-﻿using Beskar.Memory.Code.Common;
+using Beskar.Memory.Code.Common;
 using Beskar.Memory.Code.Common.Symbols;
 using Beskar.Memory.Code.Diagnostics;
 using Beskar.Memory.Code.Models.Diagnostics;
 using Beskar.Memory.Code.Models.Symbols;
 using Beskar.Memory.Code.Transformers.Archetypes.Options;
+using Beskar.Memory.Code.Transformers.Symbols.Options;
 using Beskar.Memory.Code.EnumGenerator.Generator.Models;
 using Microsoft.CodeAnalysis;
 
@@ -31,46 +32,29 @@ public sealed partial class EnumGenerator
       var namedType = symbol.CreateNamedArchetype(CreateOptions());
 
       var displayNamesBuilder = System.Collections.Immutable.ImmutableArray.CreateBuilder<EnumFieldDisplayNameSpec>();
-      foreach (var member in symbol.GetMembers())
+      
+      var fields = namedType.NamedType.Fields;
+      foreach (var fieldArchetype in fields.Array)
       {
-         if (member is IFieldSymbol { HasConstantValue: true } field)
+         if (fieldArchetype.Symbol.Attributes.Array.FirstOrDefault(a => a is EnumDisplayAttributeSpec) is EnumDisplayAttributeSpec displaySpec)
          {
-            var displayAttr = field.GetAttributes().FirstOrDefault(a =>
-               a.AttributeClass?.ToDisplayString() == "System.ComponentModel.DataAnnotations.DisplayAttribute");
-
-            if (displayAttr is not null)
+            if (displaySpec.Name is not null)
             {
-               string? nameValue = null;
                string? resourceCall = null;
-
-               var nameArg = displayAttr.NamedArguments.FirstOrDefault(kv => kv.Key == "Name");
-               if (nameArg.Value.Value is string name)
+               if (displaySpec.ResourceTypeFullName is not null)
                {
-                  nameValue = name;
+                  resourceCall = $"{displaySpec.ResourceTypeFullName}.{displaySpec.Name}";
                }
 
-               var resourceTypeArg = displayAttr.NamedArguments.FirstOrDefault(kv => kv.Key == "ResourceType");
-               if (resourceTypeArg.Value.Value is INamedTypeSymbol resourceType)
-               {
-                  var resourceTypeFullName = resourceType.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat);
-                  if (nameValue is not null)
-                  {
-                     resourceCall = $"{resourceTypeFullName}.{nameValue}";
-                  }
-               }
-
-               if (nameValue is not null)
-               {
-                  displayNamesBuilder.Add(new EnumFieldDisplayNameSpec(
-                     field.Name,
-                     resourceCall is null ? nameValue : null,
-                     resourceCall));
-               }
+               displayNamesBuilder.Add(new EnumFieldDisplayNameSpec(
+                  fieldArchetype.Symbol.Name,
+                  resourceCall is null ? displaySpec.Name : null,
+                  resourceCall));
             }
          }
       }
 
-      return builder.Build(new FastEnumSpec(namedType, displayNamesBuilder));
+      return builder.Build(new FastEnumSpec(namedType, new Beskar.Memory.Collections.SequenceArray<EnumFieldDisplayNameSpec>(displayNamesBuilder.ToArray())));
    }
 
    private static ArchetypeTransformOptions CreateOptions()
@@ -85,8 +69,37 @@ public sealed partial class EnumGenerator
             {
                Fields = true
             }
+         },
+         Symbols = new SymbolTransformOptions()
+         {
+            Load = new SymbolLoadFlags()
+            {
+               Attributes = true
+            }
          }
       };
+
+      opts.RegisterAttribute(
+         "global::System.ComponentModel.DataAnnotations.DisplayAttribute",
+         (symbol, attributeData) =>
+         {
+            string? name = null;
+            string? resourceTypeFullName = null;
+
+            var nameArg = attributeData.NamedArguments.FirstOrDefault(kv => kv.Key == "Name");
+            if (nameArg.Value.Value is string n)
+            {
+               name = n;
+            }
+
+            var resourceTypeArg = attributeData.NamedArguments.FirstOrDefault(kv => kv.Key == "ResourceType");
+            if (resourceTypeArg.Value.Value is INamedTypeSymbol resourceType)
+            {
+               resourceTypeFullName = resourceType.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat);
+            }
+
+            return new EnumDisplayAttributeSpec(name, resourceTypeFullName);
+         });
 
       return opts;
    }

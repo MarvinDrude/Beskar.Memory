@@ -25,7 +25,7 @@ public enum LocalizedEnum
 
    [System.ComponentModel.DataAnnotations.Display(Name = "ShippedKey", ResourceType = typeof(MockResources))]
    Shipped,
-   
+
    None
 }
 
