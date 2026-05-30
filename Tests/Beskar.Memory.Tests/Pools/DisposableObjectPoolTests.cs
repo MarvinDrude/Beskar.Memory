@@ -37,7 +37,7 @@ public class DisposableObjectPoolTests
       };
 
       var pool = new DisposableObjectPool<DisposableItem>(options);
-      
+
       var item1 = new DisposableItem();
       var item2 = new DisposableItem();
       var item3 = new DisposableItem();
@@ -45,7 +45,7 @@ public class DisposableObjectPoolTests
       Assert.True(pool.Return(item1));
       Assert.True(pool.Return(item2));
       Assert.False(pool.Return(item3));
-      
+
       Assert.False(item1.IsDisposed);
       Assert.False(item2.IsDisposed);
       Assert.True(item3.IsDisposed);
@@ -62,7 +62,7 @@ public class DisposableObjectPoolTests
       };
 
       var pool = new DisposableObjectPool<DisposableItem>(options);
-      
+
       var item1 = pool.Get(null);
       var item2 = pool.Get(null);
 
@@ -112,7 +112,7 @@ public class DisposableObjectPoolTests
       var item = new DisposableItem();
 
       pool.Dispose();
-      
+
       Assert.False(pool.Return(item));
       Assert.True(item.IsDisposed);
    }
@@ -127,11 +127,12 @@ public class DisposableObjectPoolTests
          MaxSize = 500
       };
 
-      for (int run = 0; run < 10; run++)
+      for (var run = 0; run < 10; run++)
       {
          var pool = new DisposableObjectPool<DisposableItem>(options);
          var items = new DisposableItem[100];
-         for (int i = 0; i < items.Length; i++)
+
+         for (var i = 0; i < items.Length; i++)
          {
             items[i] = pool.Get(null);
          }

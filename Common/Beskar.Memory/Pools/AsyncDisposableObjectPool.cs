@@ -103,12 +103,12 @@ public sealed class AsyncDisposableObjectPool<T>(ObjectPoolOptions<T> options)
       
       _isDisposed = true;
 
-      await DisposeEntryAsync(_head);
-      _head = null;
+      var head = Interlocked.Exchange(ref _head, null);
+      await DisposeEntryAsync(head).ConfigureAwait(false);
       
       while (_queue.TryDequeue(out var item))
       {
-         await DisposeEntryAsync(item);
+         await DisposeEntryAsync(item).ConfigureAwait(false);
       }
    }
 

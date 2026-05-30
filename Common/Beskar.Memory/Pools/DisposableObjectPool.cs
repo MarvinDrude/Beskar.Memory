@@ -69,8 +69,8 @@ public sealed class DisposableObjectPool<T>(ObjectPoolOptions<T> options)
       
       _isDisposed = true;
 
-      DisposeEntry(_head);
-      _head = null;
+      var head = Interlocked.Exchange(ref _head, null);
+      DisposeEntry(head);
 
       while (_queue.TryDequeue(out var item))
       {

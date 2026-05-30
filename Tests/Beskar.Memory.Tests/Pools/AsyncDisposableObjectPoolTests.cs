@@ -37,7 +37,7 @@ public class AsyncDisposableObjectPoolTests
       };
 
       var pool = new AsyncDisposableObjectPool<AsyncDisposableItem>(options);
-      
+
       var item1 = new AsyncDisposableItem();
       var item2 = new AsyncDisposableItem();
       var item3 = new AsyncDisposableItem();
@@ -62,7 +62,7 @@ public class AsyncDisposableObjectPoolTests
       };
 
       var pool = new AsyncDisposableObjectPool<AsyncDisposableItem>(options);
-      
+
       var item1 = pool.Get(null);
       var item2 = pool.Get(null);
 
@@ -172,11 +172,11 @@ public class AsyncDisposableObjectPoolTests
          MaxSize = 500
       };
 
-      for (int run = 0; run < 10; run++)
+      for (var run = 0; run < 10; run++)
       {
          var pool = new AsyncDisposableObjectPool<AsyncDisposableItem>(options);
          var items = new AsyncDisposableItem[100];
-         for (int i = 0; i < items.Length; i++)
+         for (var i = 0; i < items.Length; i++)
          {
             items[i] = pool.Get(null);
          }
