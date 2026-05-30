@@ -24,12 +24,53 @@ public sealed partial class EnumGenerator
       {
          return DiagnosticBuilder<FastEnumSpec>.CreateEmpty();
       }
-      
+
       ct.ThrowIfCancellationRequested();
       using var builder = DiagnosticBuilder<FastEnumSpec>.Create(8);
 
       var namedType = symbol.CreateNamedArchetype(CreateOptions());
-      return builder.Build(new FastEnumSpec(namedType));
+
+      var displayNamesBuilder = System.Collections.Immutable.ImmutableArray.CreateBuilder<EnumFieldDisplayNameSpec>();
+      foreach (var member in symbol.GetMembers())
+      {
+         if (member is IFieldSymbol { HasConstantValue: true } field)
+         {
+            var displayAttr = field.GetAttributes().FirstOrDefault(a =>
+               a.AttributeClass?.ToDisplayString() == "System.ComponentModel.DataAnnotations.DisplayAttribute");
+
+            if (displayAttr is not null)
+            {
+               string? nameValue = null;
+               string? resourceCall = null;
+
+               var nameArg = displayAttr.NamedArguments.FirstOrDefault(kv => kv.Key == "Name");
+               if (nameArg.Value.Value is string name)
+               {
+                  nameValue = name;
+               }
+
+               var resourceTypeArg = displayAttr.NamedArguments.FirstOrDefault(kv => kv.Key == "ResourceType");
+               if (resourceTypeArg.Value.Value is INamedTypeSymbol resourceType)
+               {
+                  var resourceTypeFullName = resourceType.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat);
+                  if (nameValue is not null)
+                  {
+                     resourceCall = $"{resourceTypeFullName}.{nameValue}";
+                  }
+               }
+
+               if (nameValue is not null)
+               {
+                  displayNamesBuilder.Add(new EnumFieldDisplayNameSpec(
+                     field.Name,
+                     resourceCall is null ? nameValue : null,
+                     resourceCall));
+               }
+            }
+         }
+      }
+
+      return builder.Build(new FastEnumSpec(namedType, displayNamesBuilder));
    }
 
    private static ArchetypeTransformOptions CreateOptions()
