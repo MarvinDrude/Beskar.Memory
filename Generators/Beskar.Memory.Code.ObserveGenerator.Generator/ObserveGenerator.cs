@@ -6,7 +6,7 @@ namespace Beskar.Memory.Code.ObserveGenerator.Generator;
 public sealed partial class ObserveGenerator : IIncrementalGenerator
 {
    public const string GeneratorName = "ObserveGenerator";
-   public const string GeneratorVersion = "1.6.2";
+   public const string GeneratorVersion = "1.6.3";
 
    public void Initialize(IncrementalGeneratorInitializationContext context)
    {

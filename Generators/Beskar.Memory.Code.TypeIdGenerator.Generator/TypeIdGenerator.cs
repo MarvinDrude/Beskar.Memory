@@ -6,7 +6,7 @@ namespace Beskar.Memory.Code.TypeIdGenerator.Generator;
 public sealed partial class TypeIdGenerator : IIncrementalGenerator
 {
    public const string GeneratorName = "TypeIdGenerator";
-   public const string GeneratorVersion = "1.6.2";
+   public const string GeneratorVersion = "1.6.3";
 
    public void Initialize(IncrementalGeneratorInitializationContext context)
    {

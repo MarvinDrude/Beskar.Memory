@@ -4,8 +4,8 @@
       <LangVersion>Preview</LangVersion>
       <ImplicitUsings>enable</ImplicitUsings>
       <Nullable>enable</Nullable>
-      <Version>1.6.2</Version>
-      <FileVersion>1.6.2</FileVersion>
+      <Version>1.6.3</Version>
+      <FileVersion>1.6.3</FileVersion>
       <AssemblyVersion>1.0.0</AssemblyVersion>
    </PropertyGroup>
 </Project>
