@@ -241,72 +241,77 @@ public sealed class HandlerPipeline<TContext>
       TContext context, CancellationToken cancellationToken)
    {
       var builder = new ArrayBuilder<Task>(handlers.Length);
-      List<Exception>? exceptions = null;
-
-      for (var i = 0; i < handlers.Length; i++)
+      
+      try
       {
-         cancellationToken.ThrowIfCancellationRequested();
-
-         try
+         List<Exception>? exceptions = null;
+   
+         for (var i = 0; i < handlers.Length; i++)
          {
-            var task = handlers[i](context, cancellationToken);
-            if (!task.IsCompletedSuccessfully)
-            {
-               builder.Add(task.AsTask());
-            }
-         }
-         catch (Exception ex)
-         {
-            exceptions ??= [];
-            exceptions.Add(ex);
-         }
-      }
-
-      if (builder.Count != 0)
-         return AwaitParallelTasksAsync(builder, exceptions);
-
-      builder.Dispose();
-
-      return exceptions is not null
-         ? throw new AggregateException(exceptions)
-         : ValueTask.CompletedTask;
-
-      static async ValueTask AwaitParallelTasksAsync(ArrayBuilder<Task> activeTasks, List<Exception>? excs)
-      {
-         using (activeTasks)
-         {
-            var tasksArray = new Task[activeTasks.Count];
-            activeTasks.WrittenSpan.CopyTo(tasksArray);
-
+            cancellationToken.ThrowIfCancellationRequested();
+   
             try
             {
-               await Task.WhenAll(tasksArray).ConfigureAwait(false);
-            }
-            catch
-            {
-               // Suppress direct throwing so we can gather all inner exceptions manually below
-            }
-
-            for (var i = 0; i < activeTasks.Count; i++)
-            {
-               var task = activeTasks.WrittenSpan[i];
-
-               if (task is { IsFaulted: true, Exception: not null })
+               var task = handlers[i](context, cancellationToken);
+               if (!task.IsCompletedSuccessfully)
                {
-                  excs ??= [];
-                  excs.AddRange(task.Exception.InnerExceptions);
-               }
-               else if (task.IsCanceled)
-               {
-                  excs ??= [];
-                  excs.Add(new TaskCanceledException(task));
+                  builder.Add(task.AsTask());
                }
             }
-
-            if (excs is not null)
+            catch (Exception ex)
             {
-               throw new AggregateException(excs);
+               exceptions ??= [];
+               exceptions.Add(ex);
             }
+         }
+   
+         if (builder.Count != 0)
+         {
+            var tasksToAwait = new Task[builder.Count];
+            builder.WrittenSpan.CopyTo(tasksToAwait);
+            
+            return AwaitParallelTasksAsync(tasksToAwait, exceptions);
+         }
+   
+         return exceptions is not null
+            ? throw new AggregateException(exceptions)
+            : ValueTask.CompletedTask;
+      }
+      finally
+      {
+         builder.Dispose();
+      }
+   
+      static async ValueTask AwaitParallelTasksAsync(Task[] tasksArray, List<Exception>? excs)
+      {
+         try
+         {
+            await Task.WhenAll(tasksArray).ConfigureAwait(false);
+         }
+         catch
+         {
+            // Suppress direct throwing so we can gather all inner exceptions manually below
+         }
+   
+         for (var i = 0; i < tasksArray.Length; i++)
+         {
+            var task = tasksArray[i];
+   
+            if (task is { IsFaulted: true, Exception: not null })
+            {
+               excs ??= [];
+               excs.AddRange(task.Exception.InnerExceptions);
+            }
+            else if (task.IsCanceled)
+            {
+               excs ??= [];
+               excs.Add(new TaskCanceledException(task));
+            }
+         }
+   
+         if (excs is not null)
+         {
+            throw new AggregateException(excs);
          }
       }
    }
