@@ -38,6 +38,12 @@ public sealed class HandlerPipeline<TContext>
    private volatile Func<TContext, CancellationToken, ValueTask>[] _handlers = [];
 
    /// <summary>
+   /// Gets the number of handlers currently registered in the pipeline.
+   /// </summary>
+   // ReSharper disable once InconsistentlySynchronizedField
+   public int Count => _handlers.Length;
+
+   /// <summary>
    /// Registers an asynchronous handler. Returns an <see cref="IDisposable"/> to remove the registration.
    /// </summary>
    /// <param name="handler">The asynchronous handler to register.</param>
@@ -241,15 +247,15 @@ public sealed class HandlerPipeline<TContext>
       TContext context, CancellationToken cancellationToken)
    {
       var builder = new ArrayBuilder<Task>(handlers.Length);
-      
+
       try
       {
          List<Exception>? exceptions = null;
-   
+
          for (var i = 0; i < handlers.Length; i++)
          {
             cancellationToken.ThrowIfCancellationRequested();
-   
+
             try
             {
                var task = handlers[i](context, cancellationToken);
@@ -264,15 +270,15 @@ public sealed class HandlerPipeline<TContext>
                exceptions.Add(ex);
             }
          }
-   
+
          if (builder.Count != 0)
          {
             var tasksToAwait = new Task[builder.Count];
             builder.WrittenSpan.CopyTo(tasksToAwait);
-            
+
             return AwaitParallelTasksAsync(tasksToAwait, exceptions);
          }
-   
+
          return exceptions is not null
             ? throw new AggregateException(exceptions)
             : ValueTask.CompletedTask;
@@ -281,7 +287,7 @@ public sealed class HandlerPipeline<TContext>
       {
          builder.Dispose();
       }
-   
+
       static async ValueTask AwaitParallelTasksAsync(Task[] tasksArray, List<Exception>? excs)
       {
          try
@@ -292,11 +298,11 @@ public sealed class HandlerPipeline<TContext>
          {
             // Suppress direct throwing so we can gather all inner exceptions manually below
          }
-   
+
          for (var i = 0; i < tasksArray.Length; i++)
          {
             var task = tasksArray[i];
-   
+
             if (task is { IsFaulted: true, Exception: not null })
             {
                excs ??= [];
@@ -308,7 +314,7 @@ public sealed class HandlerPipeline<TContext>
                excs.Add(new TaskCanceledException(task));
             }
          }
-   
+
          if (excs is not null)
          {
             throw new AggregateException(excs);

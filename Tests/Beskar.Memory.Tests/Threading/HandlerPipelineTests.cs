@@ -242,4 +242,23 @@ public class HandlerPipelineTests
       Volatile.Write(ref running, false);
       await readTask;
    }
+
+   [Fact]
+   public void CountReflectsRegisteredHandlers()
+   {
+      var pipeline = new HandlerPipeline<TestContext>();
+      Assert.Equal(0, pipeline.Count);
+
+      var sub1 = pipeline.Add(ctx => { });
+      Assert.Equal(1, pipeline.Count);
+
+      var sub2 = pipeline.Add(ctx => { });
+      Assert.Equal(2, pipeline.Count);
+
+      sub1.Dispose();
+      Assert.Equal(1, pipeline.Count);
+
+      sub2.Dispose();
+      Assert.Equal(0, pipeline.Count);
+   }
 }
