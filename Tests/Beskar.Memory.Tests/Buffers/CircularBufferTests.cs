@@ -1,4 +1,5 @@
 using System;
+using System.Runtime.CompilerServices;
 using Xunit;
 using Beskar.Memory.Buffers;
 
@@ -269,17 +270,7 @@ public class CircularBufferTests
    [Fact]
    public void CircularBufferMemoryLeakTest()
    {
-      var buffer = new CircularBuffer<object>(3);
-      var item = new object();
-      var weakRef = new WeakReference(item);
-
-      buffer.Add(item);
-      Assert.True(buffer.TryDequeue(out var dequeued));
-      Assert.Same(item, dequeued);
-
-      // Clear the local references
-      item = null;
-      dequeued = null;
+      var weakRef = ExecuteCircularBufferOperations();
 
       // Force GC
       GC.Collect();
@@ -288,11 +279,39 @@ public class CircularBufferTests
 
       // Assert that the object has been collected because the circular buffer no longer holds a reference to it
       Assert.False(weakRef.IsAlive);
+   }
+
+   [MethodImpl(MethodImplOptions.NoInlining)]
+   private WeakReference ExecuteCircularBufferOperations()
+   {
+      var buffer = new CircularBuffer<object>(3);
+      var item = new object();
+      var weakRef = new WeakReference(item);
+
+      buffer.Add(item);
+      Assert.True(buffer.TryDequeue(out var dequeued));
+      Assert.Same(item, dequeued);
+
       buffer.Dispose();
+      return weakRef;
    }
 
    [Fact]
    public void CircularBufferSlimMemoryLeakTest()
+   {
+      var weakRef = ExecuteCircularBufferSlimOperations();
+
+      // Force GC
+      GC.Collect();
+      GC.WaitForPendingFinalizers();
+      GC.Collect();
+
+      // Assert that the object has been collected
+      Assert.False(weakRef.IsAlive);
+   }
+
+   [MethodImpl(MethodImplOptions.NoInlining)]
+   private WeakReference ExecuteCircularBufferSlimOperations()
    {
       var backing = new object[3];
       var buffer = new CircularBufferSlim<object>(backing);
@@ -303,19 +322,9 @@ public class CircularBufferTests
       Assert.True(buffer.TryDequeue(out var dequeued));
       Assert.Same(item, dequeued);
 
-      // Clear local references
-      item = null;
-      dequeued = null;
-
       // Dequeue should have cleared the backing element
       Assert.Null(backing[0]);
 
-      // Force GC
-      GC.Collect();
-      GC.WaitForPendingFinalizers();
-      GC.Collect();
-
-      // Assert that the object has been collected
-      Assert.False(weakRef.IsAlive);
+      return weakRef;
    }
 }

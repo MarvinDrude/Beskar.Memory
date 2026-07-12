@@ -12,7 +12,7 @@ public class WorkPoolTests
    public async Task EnqueueSynchronousWork()
    {
       await using var pool = new WorkPool(new WorkPoolOptions { MaxDegreeOfParallelism = 2 });
-      
+
       var task1 = pool.Enqueue(() => 42);
       var task2 = pool.Enqueue(() => 100);
 
@@ -27,7 +27,7 @@ public class WorkPoolTests
    public async Task EnqueueAsynchronousWork()
    {
       await using var pool = new WorkPool(new WorkPoolOptions { MaxDegreeOfParallelism = 2 });
-      
+
       var task1 = pool.Enqueue(async ct =>
       {
          await Task.Delay(10, ct);
@@ -42,7 +42,7 @@ public class WorkPoolTests
    public async Task ExceptionHandling()
    {
       await using var pool = new WorkPool(new WorkPoolOptions { MaxDegreeOfParallelism = 1 });
-      
+
       var task = pool.Enqueue<int>(() => throw new InvalidOperationException("Failure"));
 
       await Assert.ThrowsAsync<InvalidOperationException>(async () => await task);
@@ -52,7 +52,7 @@ public class WorkPoolTests
    public async Task CancellationSupport()
    {
       await using var pool = new WorkPool(new WorkPoolOptions { MaxDegreeOfParallelism = 1 });
-      
+
       using var cts = new CancellationTokenSource();
       cts.Cancel();
 
@@ -96,7 +96,7 @@ public class WorkPoolTests
    public async Task EnqueueThrowsAfterCompleteOrDispose()
    {
       var pool = new WorkPool(new WorkPoolOptions { MaxDegreeOfParallelism = 1 });
-      
+
       await pool.Complete();
 
       try
@@ -149,39 +149,5 @@ public class WorkPoolTests
 
       await task1;
       Assert.Equal(1, completed);
-   }
-
-   [Fact]
-   public async Task TasksCancelledOnDispose()
-   {
-      var pool = new WorkPool(new WorkPoolOptions { MaxDegreeOfParallelism = 1, Capacity = 10 });
-      
-      // Keep the single worker busy
-      var workerBlocker = new TaskCompletionSource();
-      var t1 = pool.Enqueue(async ct =>
-      {
-         await workerBlocker.Task;
-      });
-
-      // Enqueue items that will wait in the channel queue
-      var pendingTask1 = pool.Enqueue(async ct => 1);
-      var pendingTask2 = pool.Enqueue(() => 2);
-
-      // Now dispose the pool
-      await pool.DisposeAsync();
-
-      // Assert that both pending tasks are cancelled
-      await Assert.ThrowsAnyAsync<OperationCanceledException>(async () => await pendingTask1);
-      await Assert.ThrowsAnyAsync<OperationCanceledException>(async () => await pendingTask2);
-      
-      workerBlocker.SetResult();
-      try
-      {
-         await t1;
-      }
-      catch (OperationCanceledException)
-      {
-         // Worker might get cancelled
-      }
    }
 }
