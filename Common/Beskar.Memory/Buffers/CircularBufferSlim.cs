@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
@@ -149,6 +149,7 @@ public ref struct CircularBufferSlim<T>
       }
 
       item = _buffer[_start];
+      _buffer[_start] = default!;
       
       _start++;
       if (_start == Capacity)

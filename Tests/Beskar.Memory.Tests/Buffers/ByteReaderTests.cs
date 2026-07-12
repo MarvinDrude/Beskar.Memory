@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Buffers;
 using System.Text;
 using Xunit;
@@ -311,5 +311,25 @@ public class ByteReaderTests
          Next = next;
          next.RunningIndex = RunningIndex + Memory.Length;
       }
+   }
+
+   [Fact]
+   public void ReadBytesDestinationSpan()
+   {
+      byte[] firstSegment = [1, 2, 3];
+      byte[] secondSegment = [4, 5, 6];
+      var segment1 = new BufferSegment(firstSegment);
+      var segment2 = new BufferSegment(secondSegment);
+      segment1.SetNext(segment2);
+      
+      var sequence = new ReadOnlySequence<byte>(segment1, 0, segment2, 3);
+      var reader = new ByteReader(sequence);
+      
+      Span<byte> destination = new byte[5];
+      reader.ReadBytes(destination);
+      
+      Assert.Equal(1, destination[0]);
+      Assert.Equal(5, destination[4]);
+      Assert.Equal(1, reader.BytesRemaining);
    }
 }

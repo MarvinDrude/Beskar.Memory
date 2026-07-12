@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Buffers;
 using System.Buffers.Binary;
 using System.Diagnostics;
@@ -308,6 +308,35 @@ public ref struct ByteReader
       _position += size;
 
       return encoding.GetString(result);
+   }
+
+   /// <summary>
+   /// Reads bytes directly into the provided destination span.
+   /// </summary>
+   [MethodImpl(MethodImplOptions.AggressiveInlining)]
+   public void ReadBytes(Span<byte> destination)
+   {
+      var length = destination.Length;
+      if (_isSequence)
+      {
+         if (_sequenceReader.UnreadSpan.Length >= length)
+         {
+            _sequenceReader.UnreadSpan[..length].CopyTo(destination);
+            _sequenceReader.Advance(length);
+            return;
+         }
+
+         if (!_sequenceReader.TryCopyTo(destination))
+         {
+            throw new ArgumentOutOfRangeException(nameof(destination));
+         }
+         _sequenceReader.Advance(length);
+      }
+      else
+      {
+         _buffer.Slice(_position, length).CopyTo(destination);
+         _position += length;
+      }
    }
 
    /// <summary>

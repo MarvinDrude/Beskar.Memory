@@ -213,12 +213,18 @@ public sealed class WorkPool : IAsyncDisposable
          // Suppress operation cancellation during disposal
       }
 
+      while (_items.Reader.TryRead(out var item))
+      {
+         item.Cancel(_cts.Token);
+      }
+
       _cts.Dispose();
    }
 
    private abstract class WorkItemBase
    {
       public abstract Task Execute(CancellationToken poolToken);
+      public abstract void Cancel(CancellationToken ct);
    }
 
    private sealed class WorkItem<T>(
@@ -244,7 +250,7 @@ public sealed class WorkPool : IAsyncDisposable
             using var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(poolToken, _ct);
             var linkedToken = linkedCts.Token;
 
-            var result = await _func(linkedToken);
+            var result = await _func(linkedToken).ConfigureAwait(false);
             _tcs.TrySetResult(result);
          }
          catch (OperationCanceledException cancelled)
@@ -256,6 +262,11 @@ public sealed class WorkPool : IAsyncDisposable
          {
             _tcs.TrySetException(ex);
          }
+      }
+
+      public override void Cancel(CancellationToken ct)
+      {
+         _tcs.TrySetCanceled(ct);
       }
    }
 
@@ -294,6 +305,11 @@ public sealed class WorkPool : IAsyncDisposable
          {
             _tcs.TrySetException(ex);
          }
+      }
+
+      public override void Cancel(CancellationToken ct)
+      {
+         _tcs.TrySetCanceled(ct);
       }
    }
 }

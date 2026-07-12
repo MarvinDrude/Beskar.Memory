@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using Xunit;
 using Beskar.Memory.Buffers;
 
@@ -264,5 +264,58 @@ public class CircularBufferTests
          threwIndexer = true;
       }
       Assert.True(threwIndexer);
+   }
+
+   [Fact]
+   public void CircularBufferMemoryLeakTest()
+   {
+      var buffer = new CircularBuffer<object>(3);
+      var item = new object();
+      var weakRef = new WeakReference(item);
+
+      buffer.Add(item);
+      Assert.True(buffer.TryDequeue(out var dequeued));
+      Assert.Same(item, dequeued);
+
+      // Clear the local references
+      item = null;
+      dequeued = null;
+
+      // Force GC
+      GC.Collect();
+      GC.WaitForPendingFinalizers();
+      GC.Collect();
+
+      // Assert that the object has been collected because the circular buffer no longer holds a reference to it
+      Assert.False(weakRef.IsAlive);
+      buffer.Dispose();
+   }
+
+   [Fact]
+   public void CircularBufferSlimMemoryLeakTest()
+   {
+      var backing = new object[3];
+      var buffer = new CircularBufferSlim<object>(backing);
+      var item = new object();
+      var weakRef = new WeakReference(item);
+
+      buffer.Add(item);
+      Assert.True(buffer.TryDequeue(out var dequeued));
+      Assert.Same(item, dequeued);
+
+      // Clear local references
+      item = null;
+      dequeued = null;
+
+      // Dequeue should have cleared the backing element
+      Assert.Null(backing[0]);
+
+      // Force GC
+      GC.Collect();
+      GC.WaitForPendingFinalizers();
+      GC.Collect();
+
+      // Assert that the object has been collected
+      Assert.False(weakRef.IsAlive);
    }
 }

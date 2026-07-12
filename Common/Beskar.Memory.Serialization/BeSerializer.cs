@@ -29,6 +29,7 @@ public static class BeSerializer
       Span<byte> initialBuffer = stackalloc byte[256];
       var writer = new BufferWriter<byte>(initialBuffer);
 
+      var previousContext = SerializationContext.Current;
       SerializationContext.Current = new SerializationContext(options);
 
       try
@@ -39,7 +40,7 @@ public static class BeSerializer
       finally
       {
          SerializationContext.Current.Dispose();
-         SerializationContext.Current = default;
+         SerializationContext.Current = previousContext;
 
          writer.Dispose();
       }
@@ -58,6 +59,7 @@ public static class BeSerializer
    {
       var writer = new BufferWriter<byte>(destination);
 
+      var previousContext = SerializationContext.Current;
       SerializationContext.Current = new SerializationContext(options);
       try
       {
@@ -67,7 +69,7 @@ public static class BeSerializer
       finally
       {
          SerializationContext.Current.Dispose();
-         SerializationContext.Current = default;
+         SerializationContext.Current = previousContext;
 
          writer.Dispose();
       }
@@ -84,6 +86,7 @@ public static class BeSerializer
    [MethodImpl(MethodImplOptions.AggressiveInlining)]
    public static int Serialize<T>(scoped in T value, ref BufferWriter<byte> writer, BeSerializerOptions? options = null)
    {
+      var previousContext = SerializationContext.Current;
       SerializationContext.Current = new SerializationContext(options);
 
       try
@@ -93,7 +96,7 @@ public static class BeSerializer
       finally
       {
          SerializationContext.Current.Dispose();
-         SerializationContext.Current = default;
+         SerializationContext.Current = previousContext;
       }
    }
 
@@ -126,6 +129,7 @@ public static class BeSerializer
    {
       var reader = new SequenceReader<byte>(sequence);
 
+      var previousContext = DeserializationContext.Current;
       DeserializationContext.Current = new DeserializationContext(options);
 
       try
@@ -139,7 +143,7 @@ public static class BeSerializer
       finally
       {
          DeserializationContext.Current.Dispose();
-         DeserializationContext.Current = default;
+         DeserializationContext.Current = previousContext;
       }
    }
 
@@ -205,6 +209,7 @@ public static class BeSerializer
    [MethodImpl(MethodImplOptions.AggressiveInlining)]
    public static T Deserialize<T>(ref SequenceReader<byte> reader, BeSerializerOptions? options = null)
    {
+      var previousContext = DeserializationContext.Current;
       DeserializationContext.Current = new DeserializationContext(options);
       try
       {
@@ -217,7 +222,7 @@ public static class BeSerializer
       finally
       {
          DeserializationContext.Current.Dispose();
-         DeserializationContext.Current = default;
+         DeserializationContext.Current = previousContext;
       }
    }
 
@@ -234,6 +239,7 @@ public static class BeSerializer
    {
       var reader = new SequenceReader<byte>(sequence);
 
+      var previousContext = DeserializationContext.Current;
       DeserializationContext.Current = new DeserializationContext(options);
 
       try
@@ -243,7 +249,7 @@ public static class BeSerializer
       finally
       {
          DeserializationContext.Current.Dispose();
-         DeserializationContext.Current = default;
+         DeserializationContext.Current = previousContext;
       }
    }
 
@@ -309,6 +315,7 @@ public static class BeSerializer
    [MethodImpl(MethodImplOptions.AggressiveInlining)]
    public static bool TryDeserialize<T>(ref SequenceReader<byte> reader, [MaybeNullWhen(false)] out T value, BeSerializerOptions? options = null)
    {
+      var previousContext = DeserializationContext.Current;
       DeserializationContext.Current = new DeserializationContext(options);
       try
       {
@@ -317,7 +324,7 @@ public static class BeSerializer
       finally
       {
          DeserializationContext.Current.Dispose();
-         DeserializationContext.Current = default;
+         DeserializationContext.Current = previousContext;
       }
    }
 

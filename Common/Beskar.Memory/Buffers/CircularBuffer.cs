@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
 using Beskar.Memory.Owners;
@@ -174,6 +174,7 @@ public sealed class CircularBuffer<T> : IDisposable
       }
 
       item = Buffer[_start];
+      Buffer[_start] = default!;
       
       _start++;
       if (_start == Capacity)

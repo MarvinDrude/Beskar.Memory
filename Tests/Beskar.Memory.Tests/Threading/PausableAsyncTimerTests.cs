@@ -362,4 +362,27 @@ public class PausableAsyncTimerTests
 
       Assert.True(ticks >= 2);
    }
+
+   [Fact]
+   public async Task ConcurrentDisposeAndResumeDoesNotLeak()
+   {
+      for (int i = 0; i < 50; i++)
+      {
+         var timer = new PausableAsyncTimer(TimeSpan.FromMilliseconds(5), () => Task.CompletedTask);
+         var runTask = timer.StartAsync();
+
+         // Let it start, then pause
+         timer.Pause();
+         await Task.Delay(1);
+
+         var resumeTask = Task.Run(() => timer.Resume());
+         var disposeTask = Task.Run(() => timer.Dispose());
+
+         await Task.WhenAll(resumeTask, disposeTask);
+
+         // Ensure StartAsync exits promptly (e.g. within 200ms)
+         var completedTask = await Task.WhenAny(runTask, Task.Delay(200));
+         Assert.Same(runTask, completedTask);
+      }
+   }
 }

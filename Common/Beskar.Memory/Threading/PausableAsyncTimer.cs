@@ -72,7 +72,14 @@ public sealed class PausableAsyncTimer : IDisposable
 
                _timer.Dispose(); // prevent timer wrap around
                if (Volatile.Read(ref _isDisposed) == 1) return;
-               _timer = new PeriodicTimer(TimeSpan.FromTicks(Volatile.Read(ref _intervalTicks)));
+               var newTimer = new PeriodicTimer(TimeSpan.FromTicks(Volatile.Read(ref _intervalTicks)));
+
+               _timer = newTimer;
+               if (Volatile.Read(ref _isDisposed) == 1)
+               {
+                  newTimer.Dispose();
+                  return;
+               }
             }
 
             if (Interlocked.CompareExchange(ref _delayNextExecution, 0, 1) == 1)

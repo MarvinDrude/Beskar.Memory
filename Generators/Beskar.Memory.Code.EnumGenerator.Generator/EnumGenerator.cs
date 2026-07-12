@@ -6,7 +6,7 @@ namespace Beskar.Memory.Code.EnumGenerator.Generator;
 public sealed partial class EnumGenerator : IIncrementalGenerator
 {
    public const string GeneratorName = "EnumGenerator";
-   public const string GeneratorVersion = "1.6.4";
+   public const string GeneratorVersion = "1.7.0";
 
    public void Initialize(IncrementalGeneratorInitializationContext context)
    {

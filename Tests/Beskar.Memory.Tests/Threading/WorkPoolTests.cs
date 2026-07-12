@@ -150,4 +150,38 @@ public class WorkPoolTests
       await task1;
       Assert.Equal(1, completed);
    }
+
+   [Fact]
+   public async Task TasksCancelledOnDispose()
+   {
+      var pool = new WorkPool(new WorkPoolOptions { MaxDegreeOfParallelism = 1, Capacity = 10 });
+      
+      // Keep the single worker busy
+      var workerBlocker = new TaskCompletionSource();
+      var t1 = pool.Enqueue(async ct =>
+      {
+         await workerBlocker.Task;
+      });
+
+      // Enqueue items that will wait in the channel queue
+      var pendingTask1 = pool.Enqueue(async ct => 1);
+      var pendingTask2 = pool.Enqueue(() => 2);
+
+      // Now dispose the pool
+      await pool.DisposeAsync();
+
+      // Assert that both pending tasks are cancelled
+      await Assert.ThrowsAnyAsync<OperationCanceledException>(async () => await pendingTask1);
+      await Assert.ThrowsAnyAsync<OperationCanceledException>(async () => await pendingTask2);
+      
+      workerBlocker.SetResult();
+      try
+      {
+         await t1;
+      }
+      catch (OperationCanceledException)
+      {
+         // Worker might get cancelled
+      }
+   }
 }

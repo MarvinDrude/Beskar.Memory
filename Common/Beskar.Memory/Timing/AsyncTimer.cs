@@ -1,11 +1,11 @@
-﻿using System;
+using System;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
 
 namespace Beskar.Memory.Timing;
 
 /// <summary>
-/// A high-performance, stack-only <see langword="ref struct"/> timer designed for asynchronous operations.
+/// A high-performance, stack-only <see langword="struct"/> timer designed for asynchronous operations.
 /// Writes elapsed time to an <see cref="AsyncTimerResult"/> block when disposed.
 /// </summary>
 public readonly struct AsyncTimer : IDisposable
